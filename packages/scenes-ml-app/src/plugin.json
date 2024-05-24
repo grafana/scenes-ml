@@ -1,0 +1,45 @@
+{
+  "$schema": "https://raw.githubusercontent.com/grafana/grafana/master/docs/sources/developers/plugins/plugin.schema.json",
+  "type": "app",
+  "name": "Scenes ML Test App",
+  "id": "grafana-scenes-ml-app",
+  "info": {
+    "keywords": [
+      "basic",
+      "app",
+      "example"
+    ],
+    "description": "An app to test scenes ML scenarios",
+    "author": {
+      "name": "Your name"
+    },
+    "logos": {
+      "small": "img/logo.svg",
+      "large": "img/logo.svg"
+    },
+    "screenshots": [],
+    "version": "%VERSION%",
+    "updated": "%TODAY%"
+  },
+  "includes": [
+    {
+      "type": "page",
+      "name": "'Home'",
+      "path": "/a/%PLUGIN_ID%",
+      "role": "Admin",
+      "addToNav": true,
+      "defaultNav": true
+    },
+    {
+      "type": "page",
+      "name": "Demos",
+      "path": "/a/%PLUGIN_ID%/demos",
+      "role": "Admin",
+      "addToNav": true
+    }
+  ],
+  "dependencies": {
+    "grafanaDependency": ">=9.2.1",
+    "plugins": []
+  }
+}

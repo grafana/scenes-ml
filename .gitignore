@@ -1,0 +1,30 @@
+# Yarn Berry
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+
+# Editor junk
+*.sublime-workspace
+*.swp
+.idea/
+.fleet/
+*.iml
+*.tmp
+.DS_Store
+.vscode/
+!.vscode/launch.json
+.vs/
+.eslintcache
+
+# Build
+compiled
+dist
+node_modules
+.docusaurus
+build
+
+.env
