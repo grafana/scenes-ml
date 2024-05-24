@@ -52,7 +52,6 @@ export class SceneBaseliner extends SceneObjectBase<SceneBaselinerState>
 
   // Add secondary requests, used to obtain and transform the training data.
   public getSupplementaryRequests(request: DataQueryRequest): SupplementaryRequest[] {
-    console.log('getSupplementaryRequests');
     const extraRequests: SupplementaryRequest[] = [];
     if (this.state.interval) {
       const { to, from: origFrom } = request.range;
@@ -463,6 +462,7 @@ function SceneBaselinerRenderer({ model }: SceneComponentProps<SceneBaseliner>) 
 
       <ToolbarButton
         variant="canvas"
+        disabled={interval === undefined}
         tooltip="Discover seasonalities"
         onClick={(e) => {
           e.stopPropagation();
@@ -471,6 +471,7 @@ function SceneBaselinerRenderer({ model }: SceneComponentProps<SceneBaseliner>) 
         }}
       >
         <Checkbox
+          disabled={interval === undefined}
           value={discoverSeasonalities ?? false}
           onChange={() => model.onDiscoverSeasonalitiesChanged(!discoverSeasonalities)}
         />

@@ -47,7 +47,7 @@ export class SceneOutlierDetector extends SceneObjectBase<SceneOutlierDetectorSt
           ...primary,
           targets: [],
         },
-        processor: (data, _) => addOutliers(data, this.state.addAnnotations ?? true, this.state.onOutlierDetected)
+        processor: (data, _) => this.state.epsilon === undefined ? data : addOutliers(data, this.state.addAnnotations ?? true, this.state.onOutlierDetected)
       }
     ];
   }
@@ -340,6 +340,7 @@ function SceneOutlierDetectorRenderer({ model }: SceneComponentProps<SceneOutlie
       </div>
 
       <ToolbarButton
+        disabled={epsilon === undefined}
         variant="canvas"
         tooltip="Add outlier annotations"
         onClick={(e) => {
@@ -349,6 +350,7 @@ function SceneOutlierDetectorRenderer({ model }: SceneComponentProps<SceneOutlie
         }}
       >
         <Checkbox
+          disabled={epsilon === undefined}
           value={addAnnotations ?? true}
           onChange={() => model.onAddAnnotationsChanged(!(addAnnotations ?? true))}
         />

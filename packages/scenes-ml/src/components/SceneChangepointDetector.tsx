@@ -47,7 +47,6 @@ export class SceneChangepointDetector extends SceneObjectBase<SceneChangepointDe
 
   // Add secondary requests, used to obtain and transform the training data.
   public getSupplementaryRequests(request: DataQueryRequest): SupplementaryRequest[] {
-    console.log('getSupplementaryRequests');
     const extraRequests: SupplementaryRequest[] = [];
     if (this.state.enabled) {
       const { to, from: origFrom } = request.range;

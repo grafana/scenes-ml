@@ -140,9 +140,8 @@ export function getMlDemo(defaults: SceneAppPageState) {
                     .setHeaderActions([
                       new SceneOutlierDetector({
                         epsilon: 0.5,
-                        onOutlierDetected: console.log,
+                        // onOutlierDetected: console.log,
                       }),
-                      new SceneTimeRangeCompare({ key: 'middle' }),
                     ])
                     .build(),
                 }),
@@ -169,7 +168,7 @@ export function getMlDemo(defaults: SceneAppPageState) {
                       new SceneBaseliner({}),
                       new SceneChangepointDetector({
                         enabled: true,
-                        onChangepointDetected: console.log,
+                        // onChangepointDetected: console.log,
                       }),
                     ])
                     .build(),
@@ -185,7 +184,7 @@ export function getMlDemo(defaults: SceneAppPageState) {
                         interval: 0.95,
                       }),
                       new SceneChangepointDetector({
-                        onChangepointDetected: console.log,
+                        // onChangepointDetected: console.log,
                       }),
                     ])
                     .build(),
@@ -201,7 +200,7 @@ export function getMlDemo(defaults: SceneAppPageState) {
                         interval: 0.95,
                       }),
                       new SceneChangepointDetector({
-                        onChangepointDetected: console.log,
+                        // onChangepointDetected: console.log,
                       }),
                     ])
                     .build(),
