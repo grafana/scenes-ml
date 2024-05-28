@@ -1,12 +1,5 @@
 apiVersion: 1
 
 apps:
-  - type: grafana-scenes-app
-    org_id: 1
-    org_name: Main Org.
+  - type: grafana-scenes-ml-app
     disabled: false
-    jsonData:
-      apiUrl: http://default-url.com
-      isApiKeySet: true
-    secureJsonData:
-      apiKey: secret-key

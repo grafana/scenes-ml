@@ -2,14 +2,13 @@ version: '3.0'
 
 services:
   grafana:
-    container_name: 'grafana-scenes-app'
+    container_name: 'grafana-scenes-ml-app'
     build:
       context: ./.config
       args:
-        grafana_version: ${GRAFANA_VERSION:-9.5.0-105543pre}
+        grafana_version: ${GRAFANA_VERSION:-11.0.0}
     ports:
       - 3001:3000/tcp
     volumes:
-      - ./dist:/var/lib/grafana/plugins/grafana-scenes-app
+      - ./dist:/var/lib/grafana/plugins/grafana-scenes-ml-app
       - ./provisioning:/etc/grafana/provisioning
-      - ./provisioning/custom.ini:/etc/grafana/grafana.ini

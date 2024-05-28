@@ -29,7 +29,7 @@ To learn more about @grafana/scenes please refer to [Scenes documentation](https
    ```
 
 1. Use [provided datasource provisioning](./provisioning//datasources/default.yaml) file to setup required data source.
-1. From `packages/scenes-app` run `yarn dev`
+1. Run `yarn dev:app` from the root of this repository.
 1. Navigate to [http://localhost:3000/a/grafana-scenes-app/](http://localhost:3001/a/grafana-scenes-app/)
 
 For more details, checkout `package.json`, `docker-compose.yaml`, and the provisioning directory.

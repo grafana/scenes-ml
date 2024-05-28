@@ -5,27 +5,28 @@
     width="100px"
     padding="40px"
   />
-  <h1>@grafana/scenes</h1>
-  <p>Build highly interactive Grafana apps with ease.</p>
+  <h1>@grafana-ml/scenes-ml</h1>
+  <p>Add Machine Learning functionality to your Scenes.</p>
 </div>
 
-## About @grafana/scenes
+## What is this?
 
-@grafana/scenes provides a library to build highly interactive, dashboard-like experiences in Grafana's app plugins. It comes with the following features:
+This library contains a collection of @grafana/scenes objects which can be added to your Scenes to run interactive, responsive machine learning algorithms directly in the browser.
 
-- Versatile layout options.
-- Grafana panels rendering.
-- Querying & transformations support
-- Multiple time ranges support.
-- Template variables support.
-- URL sync.
-- ... and more.
+scenes-ml currently contains implementations of the following:
+
+- forecasting (using the MSTL/ETS algorithms)
+- outlier detection (using the median absolute difference or DBSCAN algorithms)
+- changepoint detection (using either Bayesian Online Changepoint Detection or Autoregressive Gaussian Process Changepoint Detection)
+
+Under the hood, the heavy lifting is largely powered by the [`augurs`][augurs] library, which runs inside WebAssembly.
+See that library for more information on the underlying algorithms.
 
 ## Development
 
-To work on @grafana/scenes SDK, please follow the guides below.
+To work on `scenes-ml`, please follow the guides below.
 
-### Setting up @grafana/scenes with a local Grafana instance
+### Setting up `scenes-ml` with a local Grafana instance
 
 To setup scenes with local Grafana, the following setup is required:
 
@@ -45,3 +46,5 @@ To setup scenes with local Grafana, the following setup is required:
 ### Demo app
 
 Alternatively, use the [demo app](../scenes-app/README.md) included in this repository.
+
+[augurs]: https://github.com/grafana/augurs
