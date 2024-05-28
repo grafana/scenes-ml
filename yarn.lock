@@ -2239,10 +2239,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@grafana-ml/augurs@npm:^0.1.2":
-  version: 0.1.2
-  resolution: "@grafana-ml/augurs@npm:0.1.2::__archiveUrl=https%3A%2F%2Fus-npm.pkg.dev%2Fgrafanalabs-dev%2Fml-npm-dev%2F%40grafana-ml%2Faugurs%2F-%2F%40grafana-ml%2Faugurs-0.1.2.tgz"
-  checksum: 10/007b957fd072fac83d7d3a39ed32e8151b4559aabbb00aa5b501aa8db0ccedaa1ab30160dbd8d664e6dc25217f15326b1586976e1b7dab12dc8222dd8f2ac03a
+"@grafana-ml/augurs@npm:^0.1.3-alpha.1":
+  version: 0.1.3-alpha.1
+  resolution: "@grafana-ml/augurs@npm:0.1.3-alpha.1::__archiveUrl=https%3A%2F%2Fus-npm.pkg.dev%2Fgrafanalabs-dev%2Fml-npm-dev%2F%40grafana-ml%2Faugurs%2F-%2F%40grafana-ml%2Faugurs-0.1.3-alpha.1.tgz"
+  checksum: 10/147b6b572a09eabc51096795b2e52792301c4a4e7d991bd144d9c8e89f1b73fc23ca9d90b44c487111c7e61458672ff5df34cd765dff6f330b89b770d5d9cad9
   languageName: node
   linkType: hard
 
@@ -2252,11 +2252,11 @@ __metadata:
   dependencies:
     "@emotion/css": "npm:11.10.5"
     "@emotion/react": "npm:11.10.5"
-    "@grafana-ml/augurs": "npm:^0.1.2"
+    "@grafana-ml/augurs": "npm:^0.1.3-alpha.1"
     "@grafana/data": "npm:^10.0.3"
     "@grafana/eslint-config": "npm:5.1.0"
     "@grafana/runtime": "npm:^10.0.3"
-    "@grafana/scenes": "link:../../../scenes/packages/scenes"
+    "@grafana/scenes": "file:../../../scenes/packages/scenes"
     "@grafana/schema": "npm:^10.0.3"
     "@grafana/tsconfig": "npm:^1.3.0-rc1"
     "@grafana/ui": "npm:^10.0.3"
@@ -2498,9 +2498,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@grafana/scenes@file:../../../scenes/packages/scenes::locator=scenes-ml-app%40workspace%3Apackages%2Fscenes-ml-app":
+"@grafana/scenes@file:../../../scenes/packages/scenes::locator=%40grafana-ml%2Fscenes-ml%40workspace%3Apackages%2Fscenes-ml":
   version: 4.22.0
-  resolution: "@grafana/scenes@file:../../../scenes/packages/scenes#../../../scenes/packages/scenes::hash=cb1a16&locator=scenes-ml-app%40workspace%3Apackages%2Fscenes-ml-app"
+  resolution: "@grafana/scenes@file:../../../scenes/packages/scenes#../../../scenes/packages/scenes::hash=0edac3&locator=%40grafana-ml%2Fscenes-ml%40workspace%3Apackages%2Fscenes-ml"
   dependencies:
     "@grafana/e2e-selectors": "npm:^10.4.1"
     react-grid-layout: "npm:1.3.4"
@@ -2514,15 +2514,29 @@ __metadata:
     "@grafana/ui": ^10.4.1
     react: ^18.0.0
     react-dom: ^18.0.0
-  checksum: 10/d6148032b78f12dc9ed88efdd8845ec05071fe63054d562196c87cc5eb9ad8157093b3b583d8d78c68818408eca72d515ad98df55eb6775fa7cd1a590657dc3f
+  checksum: 10/6615d43eeb2c8338b9085415a6b641e2a243e195e08b3de87458ed87cde75b826698637b4195ae3eeb04bb504fda0dd0cf618ace1964d11f78f54588bae4b4e9
   languageName: node
   linkType: hard
 
-"@grafana/scenes@link:../../../scenes/packages/scenes::locator=%40grafana-ml%2Fscenes-ml%40workspace%3Apackages%2Fscenes-ml":
-  version: 0.0.0-use.local
-  resolution: "@grafana/scenes@link:../../../scenes/packages/scenes::locator=%40grafana-ml%2Fscenes-ml%40workspace%3Apackages%2Fscenes-ml"
+"@grafana/scenes@file:../../../scenes/packages/scenes::locator=scenes-ml-app%40workspace%3Apackages%2Fscenes-ml-app":
+  version: 4.22.0
+  resolution: "@grafana/scenes@file:../../../scenes/packages/scenes#../../../scenes/packages/scenes::hash=0edac3&locator=scenes-ml-app%40workspace%3Apackages%2Fscenes-ml-app"
+  dependencies:
+    "@grafana/e2e-selectors": "npm:^10.4.1"
+    react-grid-layout: "npm:1.3.4"
+    react-use: "npm:17.4.0"
+    react-virtualized-auto-sizer: "npm:1.0.7"
+    uuid: "npm:^9.0.0"
+  peerDependencies:
+    "@grafana/data": ^10.4.1
+    "@grafana/runtime": ^10.4.1
+    "@grafana/schema": ^10.4.1
+    "@grafana/ui": ^10.4.1
+    react: ^18.0.0
+    react-dom: ^18.0.0
+  checksum: 10/6615d43eeb2c8338b9085415a6b641e2a243e195e08b3de87458ed87cde75b826698637b4195ae3eeb04bb504fda0dd0cf618ace1964d11f78f54588bae4b4e9
   languageName: node
-  linkType: soft
+  linkType: hard
 
 "@grafana/scenes@link:../../../scenes/packages/scenes::locator=grafana-scenes-ml%40workspace%3A.":
   version: 0.0.0-use.local

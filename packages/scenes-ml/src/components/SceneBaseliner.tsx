@@ -6,7 +6,7 @@ import { ButtonGroup, Checkbox, Slider, ToolbarButton, useStyles2 } from "@grafa
 import { Duration } from 'date-fns';
 import React from 'react';
 
-import { ProcessorFunc, sceneGraph, SceneComponentProps, SceneObjectState, SceneObjectUrlValues, SceneObjectBase, SceneObjectUrlSyncConfig, ShouldRerun, SupplementaryRequest, SupplementaryRequestProvider } from "@grafana/scenes";
+import { sceneGraph, SceneComponentProps, SceneObjectState, SceneObjectUrlValues, SceneObjectBase, SceneObjectUrlSyncConfig, ExtraQueryDescriptor, ExtraQueryProvider, ExtraQueryProcessor } from "@grafana/scenes";
 
 interface SceneBaselinerState extends SceneObjectState {
   // The prediction interval to use. Must be between 0 and 1.
@@ -41,7 +41,7 @@ export const DEFAULT_TRAINING_FACTOR_OPTION = {
 };
 
 export class SceneBaseliner extends SceneObjectBase<SceneBaselinerState>
-  implements SupplementaryRequestProvider<SceneBaselinerState> {
+  implements ExtraQueryProvider<SceneBaselinerState> {
 
   public static Component = SceneBaselinerRenderer;
   protected _urlSync = new SceneObjectUrlSyncConfig(this, { keys: ['discoverSeasonalities', 'interval', 'trainingLookbackFactor'] });
@@ -51,13 +51,13 @@ export class SceneBaseliner extends SceneObjectBase<SceneBaselinerState>
   }
 
   // Add secondary requests, used to obtain and transform the training data.
-  public getSupplementaryRequests(request: DataQueryRequest): SupplementaryRequest[] {
-    const extraRequests: SupplementaryRequest[] = [];
+  public getExtraQueries(request: DataQueryRequest): ExtraQueryDescriptor[] {
+    const extraQueries: ExtraQueryDescriptor[] = [];
     if (this.state.interval) {
       const { to, from: origFrom } = request.range;
       const diffMs = to.diff(origFrom);
       const from = dateTime(to).subtract(this.state.trainingLookbackFactor ?? DEFAULT_TRAINING_FACTOR_OPTION.value * diffMs);
-      extraRequests.push({
+      extraQueries.push({
         req: {
           ...request,
           range: {
@@ -72,18 +72,18 @@ export class SceneBaseliner extends SceneObjectBase<SceneBaselinerState>
         processor: baselineProcessor(this),
       });
     }
-    return extraRequests;
+    return extraQueries;
   }
 
   // Determine if the component should be re-rendered.
-  public shouldRerun(prev: SceneBaselinerState, next: SceneBaselinerState): ShouldRerun {
+  public shouldRerun(prev: SceneBaselinerState, next: SceneBaselinerState): boolean {
     const wasEnabled = prev.interval !== undefined;
     const nowEnabled = next.interval !== undefined;
     if (wasEnabled !== nowEnabled || prev.trainingLookbackFactor !== next.trainingLookbackFactor) {
       return true;
     }
     if (prev.interval !== next.interval || prev.discoverSeasonalities !== next.discoverSeasonalities) {
-      return 'processors';
+      return true;
     }
     return false;
   }
@@ -163,7 +163,7 @@ export class SceneBaseliner extends SceneObjectBase<SceneBaselinerState>
 //
 // This function will take the secondary frame returned by the query runner and
 // produce a new frame with the baselines added.
-const baselineProcessor: (baseliner: SceneBaseliner) => ProcessorFunc = (baseliner) => (_, secondary) => {
+const baselineProcessor: (baseliner: SceneBaseliner) => ExtraQueryProcessor = (baseliner) => (_, secondary) => {
   const { interval, discoverSeasonalities } = baseliner.state;
   const timeRange = sceneGraph.getTimeRange(baseliner);
   const baselines = secondary.series.map((series) => {

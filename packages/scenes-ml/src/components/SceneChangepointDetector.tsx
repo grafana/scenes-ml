@@ -4,7 +4,7 @@ import { ButtonGroup, Checkbox, ToolbarButton } from "@grafana/ui";
 import { ChangepointDetector } from "@grafana-ml/augurs";
 import React from 'react';
 
-import { ProcessorFunc, SceneComponentProps, SceneObjectState, SceneObjectUrlValues, SceneObjectBase, SceneObjectUrlSyncConfig, SupplementaryRequestProvider, ShouldRerun, SupplementaryRequest } from "@grafana/scenes";
+import { SceneComponentProps, SceneObjectState, SceneObjectUrlValues, SceneObjectBase, SceneObjectUrlSyncConfig, ExtraQueryProcessor, ExtraQueryProvider, ExtraQueryDescriptor } from "@grafana/scenes";
 
 export interface Changepoint {
   time: number;
@@ -36,7 +36,7 @@ export const DEFAULT_LOOKBACK_FACTOR_OPTION = {
 };
 
 export class SceneChangepointDetector extends SceneObjectBase<SceneChangepointDetectorState>
-  implements SupplementaryRequestProvider<SceneChangepointDetectorState> {
+  implements ExtraQueryProvider<SceneChangepointDetectorState> {
 
   public static Component = SceneChangepointDetectorRenderer;
   protected _urlSync = new SceneObjectUrlSyncConfig(this, { keys: ['changepointLookbackFactor', 'changepointEnabled'] });
@@ -46,13 +46,13 @@ export class SceneChangepointDetector extends SceneObjectBase<SceneChangepointDe
   }
 
   // Add secondary requests, used to obtain and transform the training data.
-  public getSupplementaryRequests(request: DataQueryRequest): SupplementaryRequest[] {
-    const extraRequests: SupplementaryRequest[] = [];
+  public getExtraQueries(request: DataQueryRequest): ExtraQueryDescriptor[] {
+    const extraQueries: ExtraQueryDescriptor[] = [];
     if (this.state.enabled) {
       const { to, from: origFrom } = request.range;
       const diffMs = to.diff(origFrom);
       const from = dateTime(to).subtract(this.state.lookbackFactor ?? DEFAULT_LOOKBACK_FACTOR_OPTION.value * diffMs);
-      extraRequests.push({
+      extraQueries.push({
         req: {
           ...request,
           range: {
@@ -67,11 +67,11 @@ export class SceneChangepointDetector extends SceneObjectBase<SceneChangepointDe
         processor: changepointProcessor(this),
       });
     }
-    return extraRequests;
+    return extraQueries;
   }
 
   // Determine if the component should be re-rendered.
-  public shouldRerun(prev: SceneChangepointDetectorState, next: SceneChangepointDetectorState): ShouldRerun {
+  public shouldRerun(prev: SceneChangepointDetectorState, next: SceneChangepointDetectorState): boolean {
     // TODO: change when we allow the state to be configured in the UI.
     return prev.enabled !== next.enabled;
   }
@@ -133,7 +133,7 @@ export class SceneChangepointDetector extends SceneObjectBase<SceneChangepointDe
 //
 // This function will take the secondary frame returned by the query runner and
 // produce a new frame with the changepoint annotations.
-const changepointProcessor: (detector: SceneChangepointDetector) => ProcessorFunc = (detector) => (_, secondary) => {
+const changepointProcessor: (detector: SceneChangepointDetector) => ExtraQueryProcessor = (detector) => (_, secondary) => {
   const annotations = secondary.series.map((series) => createChangepointAnnotations(series, detector.state.onChangepointDetected));
   return { timeRange: secondary.timeRange, series: [], state: secondary.state, annotations };
 }
@@ -153,9 +153,9 @@ function createChangepointAnnotations(
       continue;
     }
     // TODO: Pass through params to the detector.
-    const cpd = ChangepointDetector.default_argpcp();
+    const cpd = ChangepointDetector.defaultArgpcp();
     const values = new Float64Array(field.values);
-    const cps = cpd.detect_changepoints(values);
+    const cps = cpd.detectChangepoints(values);
     for (const cp of cps.indices) {
       const time = timeField.values[cp + 1];
       annotationTimes.push(time);

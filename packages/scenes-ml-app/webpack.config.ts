@@ -1,3 +1,4 @@
+import path from 'path';
 import type { Configuration } from 'webpack';
 import { merge } from 'webpack-merge';
 import { getPluginId } from './.config/webpack/utils';
@@ -9,6 +10,11 @@ const config = async (env): Promise<Configuration> => {
     experiments: {
       // Required to load WASM modules.
       asyncWebAssembly: true,
+    },
+    resolve: {
+      alias: {
+        '@grafana/scenes': path.resolve(__dirname, '../../../scenes/packages/scenes/dist'),
+      }
     },
     output: {
       // Required so that Grafana knows where to load the WASM module from.

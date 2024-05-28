@@ -2,9 +2,9 @@ import React from 'react';
 import { DataQueryRequest, FieldType, GrafanaTheme2, PanelData, colorManipulator, outerJoinDataFrames } from "@grafana/data";
 import { DataTopic, FieldColorModeId } from "@grafana/schema";
 import { ButtonGroup, Checkbox, Slider, ToolbarButton, useStyles2 } from "@grafana/ui";
-// import { OutlierDetector, DBSCANOptions, MADOptions } from "@grafana-ml/augurs";
+import { OutlierDetector } from "@grafana-ml/augurs";
 
-import { SceneComponentProps, SceneObjectState, SceneObjectUrlValues, SceneObjectBase, SceneObjectUrlSyncConfig, ShouldRerun, SupplementaryRequest, SupplementaryRequestProvider } from "@grafana/scenes";
+import { SceneComponentProps, SceneObjectState, SceneObjectUrlValues, SceneObjectBase, SceneObjectUrlSyncConfig, ExtraQueryProvider, ExtraQueryDescriptor } from "@grafana/scenes";
 import { css, cx } from '@emotion/css';
 
 
@@ -15,62 +15,62 @@ interface Outlier {
 }
 
 interface SceneOutlierDetectorState extends SceneObjectState {
-  epsilon?: number;
+  sensitivity?: number;
   addAnnotations?: boolean;
   onOutlierDetected?: (outlier: Outlier) => void;
 }
 
-const DEFAULT_EPSILON = 0.5;
+const DEFAULT_SENSITIVITY = 0.5;
 
 export class SceneOutlierDetector extends SceneObjectBase<SceneOutlierDetectorState>
-  implements SupplementaryRequestProvider<SceneOutlierDetectorState> {
+  implements ExtraQueryProvider<SceneOutlierDetectorState> {
 
   public static Component = SceneOutlierDetectorRenderer;
-  protected _urlSync = new SceneObjectUrlSyncConfig(this, { keys: ['outlierEpsilon', 'outlierAddAnnotations'] });
+  protected _urlSync = new SceneObjectUrlSyncConfig(this, { keys: ['outlierSensitivity', 'outlierAddAnnotations'] });
 
   public constructor(state: Partial<SceneOutlierDetectorState>) {
     super(state);
   }
 
-  public onEpsilonChanged(epsilon: number | undefined) {
-    this.setState({ epsilon });
+  public onSensitivityChanged(sensitivity: number | undefined) {
+    this.setState({ sensitivity });
   }
 
   public onAddAnnotationsChanged(addAnnotations: boolean) {
     this.setState({ addAnnotations });
   }
 
-  public getSupplementaryRequests(primary: DataQueryRequest): SupplementaryRequest[] {
+  public getExtraQueries(primary: DataQueryRequest): ExtraQueryDescriptor[] {
     return [
       {
         req: {
           ...primary,
           targets: [],
         },
-        processor: (data, _) => this.state.epsilon === undefined ? data : addOutliers(data, this.state.addAnnotations ?? true, this.state.onOutlierDetected)
+        processor: (data, _) => this.state.sensitivity === undefined ? data : addOutliers(data, this.state.sensitivity, this.state.addAnnotations ?? true, this.state.onOutlierDetected)
       }
     ];
   }
 
-  public shouldRerun(prev: SceneOutlierDetectorState, next: SceneOutlierDetectorState): ShouldRerun {
-    return (prev.epsilon !== next.epsilon || prev.addAnnotations !== next.addAnnotations) ? 'processors' : false;
+  public shouldRerun(prev: SceneOutlierDetectorState, next: SceneOutlierDetectorState): boolean {
+    return (prev.sensitivity !== next.sensitivity || prev.addAnnotations !== next.addAnnotations) ? true : false;
   }
 
   // Get the URL state for the component.
   public getUrlState(): SceneObjectUrlValues {
     return {
-      outlierEpsilon: this.state.epsilon?.toString(),
+      outlierSensitivity: this.state.sensitivity?.toString(),
       outlierAddAnnotations: this.state.addAnnotations?.toString(),
     };
   }
 
   public updateFromUrl(values: SceneObjectUrlValues) {
-    if (!values.outlierEpsilon && !values.outlierAddAnnotations) {
+    if (!values.outlierSensitivity && !values.outlierAddAnnotations) {
       return;
     }
-    let epsilon: number | undefined;
-    if (typeof values.outlierEpsilon === 'string') {
-      epsilon = parseFloat(values.outlierEpsilon);
+    let sensitivity: number | undefined;
+    if (typeof values.outlierSensitivity === 'string') {
+      sensitivity = parseFloat(values.outlierSensitivity);
     }
 
     let addAnnotations: boolean | undefined;
@@ -79,10 +79,10 @@ export class SceneOutlierDetector extends SceneObjectBase<SceneOutlierDetectorSt
     }
 
     const stateUpdate: Partial<SceneOutlierDetectorState> = {};
-    if (epsilon) {
-      stateUpdate.epsilon = epsilon;
+    if (sensitivity) {
+      stateUpdate.sensitivity = sensitivity;
     } else {
-      stateUpdate.epsilon = DEFAULT_EPSILON;
+      stateUpdate.sensitivity = DEFAULT_SENSITIVITY;
     }
     if (addAnnotations) {
       stateUpdate.addAnnotations = addAnnotations;
@@ -93,41 +93,7 @@ export class SceneOutlierDetector extends SceneObjectBase<SceneOutlierDetectorSt
   }
 }
 
-// type OutlierTransformerOpts = DBSCANTransformerOpts | MADTransformerOpts;
-
-// interface DBSCANTransformerOpts {
-//   algorithm: 'dbscan';
-//   // options: DBSCANOptions;
-// }
-
-// interface MADTransformerOpts {
-//   algorithm: 'mad';
-//   // options: MADOptions;
-// }
-
-interface OutlierResult {
-  outlyingSeries: number[];
-  series: OutlierSeries[];
-  clusterBand: OutlierBand[];
-}
-
-interface OutlierSeries {
-  isOutlier: boolean;
-  // scores: number[];
-  intervals: OutlierInterval[];
-}
-
-interface OutlierInterval {
-  start: number;
-  end: number;
-}
-
-interface OutlierBand {
-  min: number;
-  max: number;
-}
-
-function addOutliers(data: PanelData, addAnnotations: boolean, onOutlierDetected?: (outlier: Outlier) => void): PanelData {
+function addOutliers(data: PanelData, sensitivity: number, addAnnotations: boolean, onOutlierDetected?: (outlier: Outlier) => void): PanelData {
   const frames = data.series;
   // Combine all frames into one by joining on time.
   const joined = outerJoinDataFrames({ frames });
@@ -136,45 +102,20 @@ function addOutliers(data: PanelData, addAnnotations: boolean, onOutlierDetected
   }
   // Get number fields: these are our series.
   const serieses = joined.fields.filter(f => f.type === FieldType.number);
+  const points = new Float64Array(serieses.flatMap((series) => series.values as number[]));
+  const nTimestamps = serieses[0].values.length;
 
-  // const detector = new OutlierDetector.dbscan(opts);
-  // const outliers = detector.detect(serieses);
+  const detector = OutlierDetector.dbscan({ sensitivity });
+  const outliers = detector.detect(points, nTimestamps);
 
-  // This is a simple mock outlier detector that marks any value >= 100 as an outlier.
-  const outlierSeries = serieses.map((series) => {
-    const isOutlier = series.values.find(v => v >= 100) !== undefined;
-    const intervals = series.values.reduce((acc, v, i) => {
-      if (v >= 100) {
-        if (acc.length === 0 || acc[acc.length - 1].end < i) {
-          acc.push({ start: i, end: i });
-        } else {
-          acc[acc.length - 1].end = i;
-        }
-      }
-      return acc;
-    }, [] as OutlierInterval[]);
-    return {
-      isOutlier,
-      scores: series.values.map(v => v >= 100 ? 1 : 0),
-      intervals,
-    };
-  });
-  const outliers: OutlierResult = {
-    outlyingSeries: outlierSeries.map((s, i) => s.isOutlier ? i : -1).filter(i => i !== -1),
-    series: outlierSeries,
-    clusterBand: Array.from({ length: serieses[0].values.length }, (_, i) => ({
-      min: serieses.reduce((min, series) => Math.min(min, series.values[i]), Infinity),
-      max: serieses.reduce((max, series) => Math.max(max, series.values[i] > 100 ? max : series.values[i]), -Infinity),
-    })),
-  };
   if (onOutlierDetected !== undefined) {
     const idx = 0;
-    for (const s of outliers.series) {
-      for (const i of s.intervals) {
+    for (const s of outliers.seriesResults) {
+      for (const i of s.outlierIntervals) {
         onOutlierDetected({
           series: idx,
           start: joined.fields[0].values[i.start],
-          end: joined.fields[0].values[i.end],
+          end: joined.fields[0].values[i.end ?? nTimestamps - 1],
         });
       }
     }
@@ -186,9 +127,9 @@ function addOutliers(data: PanelData, addAnnotations: boolean, onOutlierDetected
 
   const annotations = [];
   if (addAnnotations) {
-    const outlierStartTimes = outliers.series.flatMap((s) => s.intervals.map(interval => joined.fields[0].values[interval.start]));
-    const outlierEndTimes = outliers.series.flatMap((s) => s.intervals.map(interval => joined.fields[0].values[interval.end]));
-    const outlierAnnotationTexts = outliers.series.flatMap((s, i) => s.intervals.map(_ => `Outlier detected in series ${serieses[i].name}`));
+    const outlierStartTimes = outliers.seriesResults.flatMap((s) => s.outlierIntervals.map(interval => joined.fields[0].values[interval.start]));
+    const outlierEndTimes = outliers.seriesResults.flatMap((s) => s.outlierIntervals.map(interval => joined.fields[0].values[interval.end ?? nTimestamps - 1]));
+    const outlierAnnotationTexts = outliers.seriesResults.flatMap((s, i) => s.outlierIntervals.map(_ => `Outlier detected in series ${serieses[i].name}`));
     annotations.push({
       fields: [
         {
@@ -255,7 +196,7 @@ function addOutliers(data: PanelData, addAnnotations: boolean, onOutlierDetected
           {
             name: 'clusterMin',
             type: FieldType.number,
-            values: outliers.clusterBand.map(b => b.min),
+            values: outliers.clusterBand.min,
             config: {
               displayNameFromDS: 'Cluster Min',
               color: {
@@ -275,7 +216,7 @@ function addOutliers(data: PanelData, addAnnotations: boolean, onOutlierDetected
           {
             name: 'clusterMax',
             type: FieldType.number,
-            values: outliers.clusterBand.map(b => b.max),
+            values: outliers.clusterBand.max,
             config: {
               displayNameFromDS: 'Cluster Max',
               color: {
@@ -302,17 +243,17 @@ function addOutliers(data: PanelData, addAnnotations: boolean, onOutlierDetected
 
 function SceneOutlierDetectorRenderer({ model }: SceneComponentProps<SceneOutlierDetector>) {
   const styles = useStyles2(getStyles);
-  const { addAnnotations, epsilon } = model.useState();
+  const { addAnnotations, sensitivity } = model.useState();
 
   const onClick = () => {
-    model.onEpsilonChanged(epsilon === undefined ? DEFAULT_EPSILON : undefined);
+    model.onSensitivityChanged(sensitivity === undefined ? DEFAULT_SENSITIVITY : undefined);
   };
 
-  const onChangeEpsilon = (e: number | undefined) => {
-    model.onEpsilonChanged(e);
+  const onChangeSensitivity = (e: number | undefined) => {
+    model.onSensitivityChanged(e);
   }
 
-  const sliderStyles = epsilon === undefined ? cx(styles.slider, styles.disabled) : styles.slider;
+  const sliderStyles = sensitivity === undefined ? cx(styles.slider, styles.disabled) : styles.slider;
 
   return (
     <ButtonGroup>
@@ -325,22 +266,22 @@ function SceneOutlierDetectorRenderer({ model }: SceneComponentProps<SceneOutlie
           onClick();
         }}
       >
-        <Checkbox label=" " value={epsilon !== undefined} onClick={onClick} />
+        <Checkbox label=" " value={sensitivity !== undefined} onClick={onClick} />
         Outliers
       </ToolbarButton>
 
       <div className={sliderStyles}>
         <Slider
-          onAfterChange={onChangeEpsilon}
+          onChange={onChangeSensitivity}
           min={0.01}
           max={0.99}
           step={0.01}
-          value={epsilon ?? DEFAULT_EPSILON}
+          value={sensitivity ?? DEFAULT_SENSITIVITY}
         />
       </div>
 
       <ToolbarButton
-        disabled={epsilon === undefined}
+        disabled={sensitivity === undefined}
         variant="canvas"
         tooltip="Add outlier annotations"
         onClick={(e) => {
@@ -350,7 +291,7 @@ function SceneOutlierDetectorRenderer({ model }: SceneComponentProps<SceneOutlie
         }}
       >
         <Checkbox
-          disabled={epsilon === undefined}
+          disabled={sensitivity === undefined}
           value={addAnnotations ?? true}
           onChange={() => model.onAddAnnotationsChanged(!(addAnnotations ?? true))}
         />

@@ -139,7 +139,7 @@ export function getMlDemo(defaults: SceneAppPageState) {
                     .setData(getOutlierQueryRunner())
                     .setHeaderActions([
                       new SceneOutlierDetector({
-                        epsilon: 0.5,
+                        sensitivity: 0.5,
                         // onOutlierDetected: console.log,
                       }),
                     ])

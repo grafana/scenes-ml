@@ -40,8 +40,8 @@
     "url": "https://github.com/grafana/scenes/issues"
   },
   "dependencies": {
-    "@grafana-ml/augurs": "^0.1.2",
-    "@grafana/scenes": "link:../../../scenes/packages/scenes",
+    "@grafana-ml/augurs": "^0.1.3-alpha.1",
+    "@grafana/scenes": "file:../../../scenes/packages/scenes",
     "date-fns": "^3.6.0"
   },
   "peerDependencies": {
