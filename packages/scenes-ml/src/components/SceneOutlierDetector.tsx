@@ -15,6 +15,7 @@ interface Outlier {
 }
 
 interface SceneOutlierDetectorState extends SceneObjectState {
+  worker: Worker;
   sensitivity?: number;
   addAnnotations?: boolean;
   onOutlierDetected?: (outlier: Outlier) => void;
@@ -28,8 +29,8 @@ export class SceneOutlierDetector extends SceneObjectBase<SceneOutlierDetectorSt
   public static Component = SceneOutlierDetectorRenderer;
   protected _urlSync = new SceneObjectUrlSyncConfig(this, { keys: ['outlierSensitivity', 'outlierAddAnnotations'] });
 
-  public constructor(state: Partial<SceneOutlierDetectorState>) {
-    super(state);
+  public constructor(worker: Worker, state: Partial<SceneOutlierDetectorState>) {
+    super({ worker, ...state });
   }
 
   public onSensitivityChanged(sensitivity: number | undefined) {
@@ -41,6 +42,12 @@ export class SceneOutlierDetector extends SceneObjectBase<SceneOutlierDetectorSt
   }
 
   public getExtraQueries(primary: DataQueryRequest): ExtraQueryDescriptor[] {
+
+    this.state.worker.postMessage('hello');
+    this.state.worker.onmessage = function(e) {
+      console.log('Message received from worker');
+      console.log(e);
+    }
     return this.state.sensitivity === undefined ? [] : [
       {
         req: {
