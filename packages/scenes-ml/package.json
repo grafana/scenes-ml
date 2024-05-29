@@ -33,8 +33,7 @@
     "prepack": "node ./scripts/prepack.js",
     "postpack": "node ./scripts/postpack.js",
     "artifactregistry-login": "yarn dlx google-artifactregistry-auth",
-    "prepublishOnly": "yarn artifactregistry-login",
-    "set-registry-token": "yarn config set --home npmAuthToken $(gcloud auth print-access-token --project=grafanalabs-dev)"
+    "set-registry-token": "yarn config set --home 'npmScopes[\"grafana-ml\"].npmAuthToken' $(gcloud auth print-access-token --project=grafanalabs-dev)"
   },
   "bugs": {
     "url": "https://github.com/grafana/scenes/issues"

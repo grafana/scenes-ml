@@ -298,7 +298,7 @@ function createBaselinesForFrame(
   model.fit(y);
 
   // Get predictions for in-sample data (i.e. the same data we trained on).
-  const inSample = model.predict_in_sample(interval);
+  const inSample = model.predictInSample(interval);
   let values = Array.from(inSample.point);
   let lower = inSample.intervals ? Array.from(inSample.intervals.lower) : undefined;
   let upper = inSample.intervals ? Array.from(inSample.intervals.upper) : undefined;

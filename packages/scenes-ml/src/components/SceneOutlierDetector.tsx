@@ -41,13 +41,13 @@ export class SceneOutlierDetector extends SceneObjectBase<SceneOutlierDetectorSt
   }
 
   public getExtraQueries(primary: DataQueryRequest): ExtraQueryDescriptor[] {
-    return [
+    return this.state.sensitivity === undefined ? [] : [
       {
         req: {
           ...primary,
           targets: [],
         },
-        processor: (data, _) => this.state.sensitivity === undefined ? data : addOutliers(data, this.state.sensitivity, this.state.addAnnotations ?? true, this.state.onOutlierDetected)
+        processor: (data, _) => addOutliers(data, this.state.sensitivity!, this.state.addAnnotations ?? true, this.state.onOutlierDetected)
       }
     ];
   }
