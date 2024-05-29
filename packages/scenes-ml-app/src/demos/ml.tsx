@@ -67,6 +67,14 @@ const OUTLIER_DATA = [
   ],
 ];
 
+// Doesn't work because Webpack generates an AMD which is unsupported by workers.
+// const worker = new Worker(new URL("worker.ts", import.meta.url), { name: 'scenes-ml-app' });
+// This works because we have a custom entry in our webpack config which
+// generates a UMD bundle in dist/worker.js.
+// Note: need to remove references to `document` in worker.js...
+const url = new URL("../../dist/worker.js", import.meta.url);
+const worker = new Worker(url, { name: 'scenes-ml-app' });
+
 function getOutlierQueryRunner() {
   return new SceneQueryRunner({
     queries: OUTLIER_DATA.map((values, i) => ({
@@ -132,7 +140,7 @@ export function getMlDemo(defaults: SceneAppPageState) {
                     .setTitle('Outlier data')
                     .setData(getOutlierQueryRunner())
                     .setHeaderActions([
-                      new SceneOutlierDetector({
+                      new SceneOutlierDetector(worker, {
                         sensitivity: 0.5,
                         // onOutlierDetected: console.log,
                       }),

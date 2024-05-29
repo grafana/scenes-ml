@@ -19,6 +19,7 @@ interface Outlier {
 }
 
 interface SceneOutlierDetectorState extends SceneObjectState {
+  worker: Worker;
   sensitivity?: number;
   addAnnotations?: boolean;
   onOutlierDetected?: (outlier: Outlier) => void;
@@ -40,8 +41,8 @@ export class SceneOutlierDetector extends SceneObjectBase<SceneOutlierDetectorSt
   // input data if it's the same as the previous run.
   protected lastRequestId?: string;
 
-  public constructor(state: Partial<SceneOutlierDetectorState>) {
-    super(state);
+  public constructor(worker: Worker, state: Partial<SceneOutlierDetectorState>) {
+    super({ worker, ...state });
   }
 
   public onSensitivityChanged(sensitivity: number | undefined) {
@@ -61,7 +62,12 @@ export class SceneOutlierDetector extends SceneObjectBase<SceneOutlierDetectorSt
   }
 
   public getExtraQueries(primary: DataQueryRequest): ExtraQueryDescriptor[] {
-    const { sensitivity } = this.state;
+    const { sensitivity, worker } = this.state;
+    worker.postMessage('hello');
+    worker.onmessage = function(e) {
+      console.log('Message received from worker');
+      console.log(e);
+    }
     return sensitivity === undefined ? [] : [
       {
         req: {
