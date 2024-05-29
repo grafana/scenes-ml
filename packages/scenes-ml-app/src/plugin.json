@@ -4,11 +4,7 @@
   "name": "Scenes ML Test App",
   "id": "grafana-scenes-ml-app",
   "info": {
-    "keywords": [
-      "basic",
-      "app",
-      "example"
-    ],
+    "keywords": ["basic", "app", "example"],
     "description": "An app to test scenes ML scenarios",
     "author": {
       "name": "Your name"
