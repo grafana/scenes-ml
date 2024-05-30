@@ -140,17 +140,17 @@ export function getMlDemo(defaults: SceneAppPageState) {
                     .build(),
                 }),
                 new SceneFlexItem({
-                  minWidth: '40%',
+                  minWidth: '100%',
                   minHeight: 500,
                   body: PanelBuilders.timeseries()
                     .setTitle('Simple wave')
                     .setData(getQueryRunnerWithCSVWaveQuery({}, { maxDataPointsFromWidth: true }))
-                    .setHeaderActions([new SceneBaseliner({ interval: 0.95 }), new SceneChangepointDetector({})])
+                    .setHeaderActions([new SceneBaseliner({ interval: 0.95 })])
                     .build(),
                 }),
 
                 new SceneFlexItem({
-                  minWidth: '40%',
+                  minWidth: '100%',
                   minHeight: 500,
                   body: PanelBuilders.timeseries()
                     .setTitle('Spikey data with changepoints')
@@ -167,7 +167,7 @@ export function getMlDemo(defaults: SceneAppPageState) {
                     .build(),
                 }),
                 new SceneFlexItem({
-                  minWidth: '40%',
+                  minWidth: '100%',
                   minHeight: 500,
                   body: PanelBuilders.timeseries()
                     .setTitle('Realistic repeated series')
@@ -181,14 +181,11 @@ export function getMlDemo(defaults: SceneAppPageState) {
                       new SceneBaseliner({
                         interval: 0.95,
                       }),
-                      new SceneChangepointDetector({
-                        // onChangepointDetected: console.log,
-                      }),
                     ])
                     .build(),
                 }),
                 new SceneFlexItem({
-                  minWidth: '40%',
+                  minWidth: '100%',
                   minHeight: 500,
                   body: PanelBuilders.timeseries()
                     .setTitle('Sawtooth data')
@@ -201,9 +198,6 @@ export function getMlDemo(defaults: SceneAppPageState) {
                     .setHeaderActions([
                       new SceneBaseliner({
                         interval: 0.95,
-                      }),
-                      new SceneChangepointDetector({
-                        // onChangepointDetected: console.log,
                       }),
                     ])
                     .build(),
