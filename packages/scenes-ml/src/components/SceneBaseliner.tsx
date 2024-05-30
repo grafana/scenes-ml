@@ -6,7 +6,7 @@ import { ButtonGroup, Checkbox, Slider, ToolbarButton, useStyles2 } from "@grafa
 import { Duration } from 'date-fns';
 import React from 'react';
 
-import { sceneGraph, SceneComponentProps, SceneObjectState, SceneObjectUrlValues, SceneObjectBase, SceneObjectUrlSyncConfig, ExtraQueryDescriptor, ExtraQueryProvider, ExtraQueryProcessor } from "@grafana/scenes";
+import { sceneGraph, SceneComponentProps, SceneObjectState, SceneObjectUrlValues, SceneObjectBase, SceneObjectUrlSyncConfig, ExtraQueryDescriptor, ExtraQueryProvider, ExtraQueryDataProcessor } from "@grafana/scenes";
 
 interface SceneBaselinerState extends SceneObjectState {
   // The prediction interval to use. Must be between 0 and 1.
@@ -163,7 +163,7 @@ export class SceneBaseliner extends SceneObjectBase<SceneBaselinerState>
 //
 // This function will take the secondary frame returned by the query runner and
 // produce a new frame with the baselines added.
-const baselineProcessor: (baseliner: SceneBaseliner) => ExtraQueryProcessor = (baseliner) => (_, secondary) => {
+const baselineProcessor: (baseliner: SceneBaseliner) => ExtraQueryDataProcessor = (baseliner) => (_, secondary) => {
   const { interval, discoverSeasonalities } = baseliner.state;
   const timeRange = sceneGraph.getTimeRange(baseliner);
   const baselines = secondary.series.map((series) => {

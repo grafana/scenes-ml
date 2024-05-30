@@ -4,7 +4,7 @@ import { ButtonGroup, Checkbox, ToolbarButton } from "@grafana/ui";
 import { ChangepointDetector } from "@grafana-ml/augurs";
 import React from 'react';
 
-import { SceneComponentProps, SceneObjectState, SceneObjectUrlValues, SceneObjectBase, SceneObjectUrlSyncConfig, ExtraQueryProcessor, ExtraQueryProvider, ExtraQueryDescriptor } from "@grafana/scenes";
+import { SceneComponentProps, SceneObjectState, SceneObjectUrlValues, SceneObjectBase, SceneObjectUrlSyncConfig, ExtraQueryDataProcessor, ExtraQueryProvider, ExtraQueryDescriptor } from "@grafana/scenes";
 
 export interface Changepoint {
   time: number;
@@ -133,7 +133,7 @@ export class SceneChangepointDetector extends SceneObjectBase<SceneChangepointDe
 //
 // This function will take the secondary frame returned by the query runner and
 // produce a new frame with the changepoint annotations.
-const changepointProcessor: (detector: SceneChangepointDetector) => ExtraQueryProcessor = (detector) => (_, secondary) => {
+const changepointProcessor: (detector: SceneChangepointDetector) => ExtraQueryDataProcessor = (detector) => (_, secondary) => {
   const annotations = secondary.series.map((series) => createChangepointAnnotations(series, detector.state.onChangepointDetected));
   return { timeRange: secondary.timeRange, series: [], state: secondary.state, annotations };
 }
