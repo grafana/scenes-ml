@@ -2,11 +2,11 @@ import React from 'react';
 import { LoadedOutlierDetector, OutlierDetector } from "@bsull/augurs";
 import { DataFrame, DataQueryRequest, FieldType, GrafanaTheme2, PanelData, colorManipulator, outerJoinDataFrames } from "@grafana/data";
 import { DataTopic, FieldColorModeId } from "@grafana/schema";
-import { ButtonGroup, Checkbox, Slider, ToolbarButton, useStyles2 } from "@grafana/ui";
+import { ButtonGroup, Checkbox, Icon, Slider, ToolbarButton, useStyles2 } from "@grafana/ui";
 
 import { SceneComponentProps, SceneObjectState, SceneObjectUrlValues, SceneObjectBase, SceneObjectUrlSyncConfig, ExtraQueryProvider, ExtraQueryDescriptor } from "@grafana/scenes";
 import { css, cx } from '@emotion/css';
-import { Observable, of } from 'rxjs';
+import { of } from 'rxjs';
 
 
 interface Outlier {
@@ -19,6 +19,7 @@ interface SceneOutlierDetectorState extends SceneObjectState {
   sensitivity?: number;
   addAnnotations?: boolean;
   onOutlierDetected?: (outlier: Outlier) => void;
+  pinned?: boolean;
 }
 
 const DEFAULT_SENSITIVITY = 0.5;
@@ -28,6 +29,7 @@ export class SceneOutlierDetector extends SceneObjectBase<SceneOutlierDetectorSt
 
   public static Component = SceneOutlierDetectorRenderer;
   protected _urlSync = new SceneObjectUrlSyncConfig(this, { keys: ['outlierSensitivity', 'outlierAddAnnotations'] });
+  private latestData: PanelData | undefined;
 
   // The most recent detector instance.
   protected detector?: LoadedOutlierDetector;
@@ -47,6 +49,14 @@ export class SceneOutlierDetector extends SceneObjectBase<SceneOutlierDetectorSt
     this.setState({ addAnnotations });
   }
 
+  public onPinnedChanged(pinned: boolean) {
+    this.setState({ pinned });
+  }
+
+  private setLatestData(data: PanelData) {
+    this.latestData = data;
+  }
+
   public getExtraQueries(primary: DataQueryRequest): ExtraQueryDescriptor[] {
     const { sensitivity } = this.state;
     return sensitivity === undefined ? [] : [
@@ -56,6 +66,9 @@ export class SceneOutlierDetector extends SceneObjectBase<SceneOutlierDetectorSt
           targets: [],
         },
         processor: (data, _) => {
+          if (this.state.pinned && this.latestData !== undefined) {
+            return of(this.latestData)
+          }
           const frames = data.series;
           // Combine all frames into one by joining on time.
           const joined = outerJoinDataFrames({ frames });
@@ -74,14 +87,19 @@ export class SceneOutlierDetector extends SceneObjectBase<SceneOutlierDetectorSt
             this.detector = createDetector(joined, sensitivity);
           }
           this.lastRequestId = data.request?.requestId;
-          return addOutliers(this.detector, data, joined, this.state.addAnnotations ?? true, this.state.onOutlierDetected)
+          const dataWithOutliers = addOutliers(this.detector, data, joined, this.state.addAnnotations ?? true, this.state.onOutlierDetected);
+          this.setLatestData(dataWithOutliers);
+          return of(dataWithOutliers);
         },
       }
     ];
   }
 
   public shouldRerun(prev: SceneOutlierDetectorState, next: SceneOutlierDetectorState): boolean {
-    return (prev.sensitivity !== next.sensitivity || prev.addAnnotations !== next.addAnnotations) ? true : false;
+    if (next.pinned) {
+      return false;
+    }
+    return prev.sensitivity !== next.sensitivity || prev.addAnnotations !== next.addAnnotations || prev.pinned !== next.pinned;
   }
 
   // Get the URL state for the component.
@@ -129,7 +147,7 @@ function createDetector(data: DataFrame, sensitivity: number): LoadedOutlierDete
   return OutlierDetector.dbscan({ sensitivity }).preprocess(points, nTimestamps);
 }
 
-function addOutliers(detector: LoadedOutlierDetector, data: PanelData, joined: DataFrame, addAnnotations: boolean, onOutlierDetected?: (outlier: Outlier) => void): Observable<PanelData> {
+function addOutliers(detector: LoadedOutlierDetector, data: PanelData, joined: DataFrame, addAnnotations: boolean, onOutlierDetected?: (outlier: Outlier) => void): PanelData {
   // TODO: avoid duplicating the serieses extraction.
   const serieses = joined.fields.filter(f => f.type === FieldType.number);
   const nTimestamps = joined.fields[0].values.length;
@@ -191,11 +209,10 @@ function addOutliers(detector: LoadedOutlierDetector, data: PanelData, joined: D
     });
   }
 
-
   // Should return:
   // - The original data with a new label field indicating whether it's an outlier or not
   // - New fields for minimum and maximum bands of the cluster
-  return of({
+  return {
     ...data,
     series: [
       {
@@ -265,12 +282,12 @@ function addOutliers(detector: LoadedOutlierDetector, data: PanelData, joined: D
       },
     ],
     annotations,
-  });
+  };
 }
 
 function SceneOutlierDetectorRenderer({ model }: SceneComponentProps<SceneOutlierDetector>) {
   const styles = useStyles2(getStyles);
-  const { addAnnotations, sensitivity } = model.useState();
+  const { addAnnotations, pinned, sensitivity } = model.useState();
 
   const onClick = () => {
     model.onSensitivityChanged(sensitivity === undefined ? DEFAULT_SENSITIVITY : undefined);
@@ -280,7 +297,7 @@ function SceneOutlierDetectorRenderer({ model }: SceneComponentProps<SceneOutlie
     model.onSensitivityChanged(e);
   }
 
-  const sliderStyles = sensitivity === undefined ? cx(styles.slider, styles.disabled) : styles.slider;
+  const sliderStyles = sensitivity === undefined || pinned ? cx(styles.slider, styles.disabled) : styles.slider;
 
   return (
     <ButtonGroup>
@@ -308,7 +325,7 @@ function SceneOutlierDetectorRenderer({ model }: SceneComponentProps<SceneOutlie
       </div>
 
       <ToolbarButton
-        disabled={sensitivity === undefined}
+        disabled={sensitivity === undefined || pinned}
         variant="canvas"
         tooltip="Add outlier annotations"
         onClick={(e) => {
@@ -318,10 +335,27 @@ function SceneOutlierDetectorRenderer({ model }: SceneComponentProps<SceneOutlie
         }}
       >
         <Checkbox
-          disabled={sensitivity === undefined}
+          disabled={sensitivity === undefined || pinned}
           value={addAnnotations ?? true}
           onChange={() => model.onAddAnnotationsChanged(!(addAnnotations ?? true))}
         />
+      </ToolbarButton>
+      <ToolbarButton
+        disabled={sensitivity === undefined}
+        variant="canvas"
+        tooltip="Pin outlier detection results"
+        onClick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          model.onPinnedChanged(!pinned);
+        }}
+      >
+        <Checkbox
+          disabled={sensitivity === undefined}
+          value={pinned ?? false}
+          onChange={() => model.onPinnedChanged(!pinned)}
+        />
+        <Icon size="sm" name="gf-pin" />
       </ToolbarButton>
     </ButtonGroup>
   );
