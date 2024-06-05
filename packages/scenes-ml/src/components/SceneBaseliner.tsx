@@ -1,12 +1,13 @@
+import { ets, seasonalities } from "@bsull/augurs";
 import { css, cx } from "@emotion/css";
 import { DataFrame, DataQueryRequest, dateTime, durationToMilliseconds, Field, FieldType, GrafanaTheme2, TimeRange } from "@grafana/data";
-import { ets, seasonalities } from "@grafana-ml/augurs";
 import { FieldColorModeId } from "@grafana/schema";
 import { ButtonGroup, Checkbox, Slider, ToolbarButton, useStyles2 } from "@grafana/ui";
 import { Duration } from 'date-fns';
 import React from 'react';
 
 import { sceneGraph, SceneComponentProps, SceneObjectState, SceneObjectUrlValues, SceneObjectBase, SceneObjectUrlSyncConfig, ExtraQueryDescriptor, ExtraQueryProvider, ExtraQueryDataProcessor } from "@grafana/scenes";
+import { of } from "rxjs";
 
 interface SceneBaselinerState extends SceneObjectState {
   // The prediction interval to use. Must be between 0 and 1.
@@ -181,7 +182,7 @@ const baselineProcessor: (baseliner: SceneBaseliner) => ExtraQueryDataProcessor 
       fields: baselineFrame.fields,
     };
   });
-  return { ...secondary, series: baselines };
+  return of({ ...secondary, series: baselines });
 }
 
 // Seasonalities added by default.

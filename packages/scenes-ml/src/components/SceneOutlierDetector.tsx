@@ -1,11 +1,12 @@
 import React from 'react';
-import { DataQueryRequest, FieldType, GrafanaTheme2, PanelData, colorManipulator, outerJoinDataFrames } from "@grafana/data";
+import { LoadedOutlierDetector, OutlierDetector } from "@bsull/augurs";
+import { DataFrame, DataQueryRequest, FieldType, GrafanaTheme2, PanelData, colorManipulator, outerJoinDataFrames } from "@grafana/data";
 import { DataTopic, FieldColorModeId } from "@grafana/schema";
 import { ButtonGroup, Checkbox, Slider, ToolbarButton, useStyles2 } from "@grafana/ui";
-import { OutlierDetector } from "@grafana-ml/augurs";
 
 import { SceneComponentProps, SceneObjectState, SceneObjectUrlValues, SceneObjectBase, SceneObjectUrlSyncConfig, ExtraQueryProvider, ExtraQueryDescriptor } from "@grafana/scenes";
 import { css, cx } from '@emotion/css';
+import { Observable, of } from 'rxjs';
 
 
 interface Outlier {
@@ -28,6 +29,12 @@ export class SceneOutlierDetector extends SceneObjectBase<SceneOutlierDetectorSt
   public static Component = SceneOutlierDetectorRenderer;
   protected _urlSync = new SceneObjectUrlSyncConfig(this, { keys: ['outlierSensitivity', 'outlierAddAnnotations'] });
 
+  // The most recent detector instance.
+  protected detector?: LoadedOutlierDetector;
+  // The request ID of the last request, to ensure we don't re-process the detector's
+  // input data if it's the same as the previous run.
+  protected lastRequestId?: string;
+
   public constructor(state: Partial<SceneOutlierDetectorState>) {
     super(state);
   }
@@ -41,13 +48,34 @@ export class SceneOutlierDetector extends SceneObjectBase<SceneOutlierDetectorSt
   }
 
   public getExtraQueries(primary: DataQueryRequest): ExtraQueryDescriptor[] {
-    return this.state.sensitivity === undefined ? [] : [
+    const { sensitivity } = this.state;
+    return sensitivity === undefined ? [] : [
       {
         req: {
           ...primary,
           targets: [],
         },
-        processor: (data, _) => addOutliers(data, this.state.sensitivity!, this.state.addAnnotations ?? true, this.state.onOutlierDetected)
+        processor: (data, _) => {
+          const frames = data.series;
+          // Combine all frames into one by joining on time.
+          const joined = outerJoinDataFrames({ frames });
+          if (joined === undefined) {
+            return of(data);
+          }
+          // If the detector already exists and the request ID is the same as the last one,
+          // just update the sensitivity.
+          // Otherwise, create a new detector instance, with fresh data and sensitivity.
+          // Note: this won't work unless we have a way to avoid re-requesting the data
+          // on every rerun, which needs a change to the `shouldRerun` signature.
+          // See https://github.com/grafana/scenes/pull/748 for one possible option.
+          if (this.detector !== undefined && data.request?.requestId === this.lastRequestId) {
+            this.detector.updateDetector({ dbscan: { sensitivity } });
+          } else {
+            this.detector = createDetector(joined, sensitivity);
+          }
+          this.lastRequestId = data.request?.requestId;
+          return addOutliers(this.detector, data, joined, this.state.addAnnotations ?? true, this.state.onOutlierDetected)
+        },
       }
     ];
   }
@@ -93,20 +121,19 @@ export class SceneOutlierDetector extends SceneObjectBase<SceneOutlierDetectorSt
   }
 }
 
-function addOutliers(data: PanelData, sensitivity: number, addAnnotations: boolean, onOutlierDetected?: (outlier: Outlier) => void): PanelData {
-  const frames = data.series;
-  // Combine all frames into one by joining on time.
-  const joined = outerJoinDataFrames({ frames });
-  if (joined === undefined) {
-    return data;
-  }
+function createDetector(data: DataFrame, sensitivity: number): LoadedOutlierDetector {
   // Get number fields: these are our series.
-  const serieses = joined.fields.filter(f => f.type === FieldType.number);
-  const points = new Float64Array(serieses.flatMap((series) => series.values as number[]));
+  const serieses = data.fields.filter(f => f.type === FieldType.number);
   const nTimestamps = serieses[0].values.length;
+  const points = new Float64Array(serieses.flatMap((series) => series.values as number[]));
+  return OutlierDetector.dbscan({ sensitivity }).preprocess(points, nTimestamps);
+}
 
-  const detector = OutlierDetector.dbscan({ sensitivity });
-  const outliers = detector.detect(points, nTimestamps);
+function addOutliers(detector: LoadedOutlierDetector, data: PanelData, joined: DataFrame, addAnnotations: boolean, onOutlierDetected?: (outlier: Outlier) => void): Observable<PanelData> {
+  // TODO: avoid duplicating the serieses extraction.
+  const serieses = joined.fields.filter(f => f.type === FieldType.number);
+  const nTimestamps = joined.fields[0].values.length;
+  const outliers = detector.detect();
 
   if (onOutlierDetected !== undefined) {
     const idx = 0;
@@ -168,7 +195,7 @@ function addOutliers(data: PanelData, sensitivity: number, addAnnotations: boole
   // Should return:
   // - The original data with a new label field indicating whether it's an outlier or not
   // - New fields for minimum and maximum bands of the cluster
-  return {
+  return of({
     ...data,
     series: [
       {
@@ -238,7 +265,7 @@ function addOutliers(data: PanelData, sensitivity: number, addAnnotations: boole
       },
     ],
     annotations,
-  };
+  });
 }
 
 function SceneOutlierDetectorRenderer({ model }: SceneComponentProps<SceneOutlierDetector>) {

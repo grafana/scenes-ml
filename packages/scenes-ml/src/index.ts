@@ -1,4 +1,4 @@
-import init from '@grafana-ml/augurs';
+import init from '@bsull/augurs';
 // eslint-disable-next-line no-console
 init().then(() => console.debug('Grafana ML initialized'));
 
