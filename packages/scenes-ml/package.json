@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "@bsull/augurs": "0.2.0",
-    "@grafana/scenes": "4.26.1",
+    "@grafana/scenes": "^4.26.1",
     "date-fns": "^3.6.0"
   },
   "peerDependencies": {
