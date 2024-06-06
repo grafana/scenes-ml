@@ -2,7 +2,7 @@ import React from 'react';
 import { LoadedOutlierDetector, OutlierDetector } from "@bsull/augurs";
 import { DataFrame, DataQueryRequest, FieldType, GrafanaTheme2, PanelData, colorManipulator, outerJoinDataFrames } from "@grafana/data";
 import { DataTopic, FieldColorModeId } from "@grafana/schema";
-import { ButtonGroup, Checkbox, Icon, Slider, ToolbarButton, useStyles2 } from "@grafana/ui";
+import { ButtonGroup, Checkbox, Slider, ToolbarButton, useStyles2 } from "@grafana/ui";
 
 import { SceneComponentProps, SceneObjectState, SceneObjectUrlValues, SceneObjectBase, SceneObjectUrlSyncConfig, ExtraQueryProvider, ExtraQueryDescriptor } from "@grafana/scenes";
 import { css, cx } from '@emotion/css';
@@ -333,13 +333,11 @@ function SceneOutlierDetectorRenderer({ model }: SceneComponentProps<SceneOutlie
           e.preventDefault();
           model.onAddAnnotationsChanged(!(addAnnotations ?? true));
         }}
-      >
-        <Checkbox
-          disabled={sensitivity === undefined || pinned}
-          value={addAnnotations ?? true}
-          onChange={() => model.onAddAnnotationsChanged(!(addAnnotations ?? true))}
-        />
-      </ToolbarButton>
+        isHighlighted={addAnnotations ?? true}
+        icon="ellipsis-v"
+        iconSize="sm"
+        iconOnly
+      />
       <ToolbarButton
         disabled={sensitivity === undefined}
         variant="canvas"
@@ -349,14 +347,11 @@ function SceneOutlierDetectorRenderer({ model }: SceneComponentProps<SceneOutlie
           e.preventDefault();
           model.onPinnedChanged(!pinned);
         }}
-      >
-        <Checkbox
-          disabled={sensitivity === undefined}
-          value={pinned ?? false}
-          onChange={() => model.onPinnedChanged(!pinned)}
-        />
-        <Icon size="sm" name="gf-pin" />
-      </ToolbarButton>
+        isHighlighted={pinned ?? false}
+        icon="gf-pin"
+        iconSize="sm"
+        iconOnly
+      />
     </ButtonGroup>
   );
 }

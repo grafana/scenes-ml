@@ -2,7 +2,7 @@ import { ets, seasonalities } from "@bsull/augurs";
 import { css, cx } from "@emotion/css";
 import { DataFrame, DataQueryRequest, dateTime, durationToMilliseconds, Field, FieldType, GrafanaTheme2, PanelData, TimeRange } from "@grafana/data";
 import { FieldColorModeId } from "@grafana/schema";
-import { ButtonGroup, Checkbox, Icon, Slider, ToolbarButton, useStyles2 } from "@grafana/ui";
+import { ButtonGroup, Checkbox, Slider, ToolbarButton, useStyles2 } from "@grafana/ui";
 import { Duration } from 'date-fns';
 import React from 'react';
 
@@ -497,13 +497,12 @@ function SceneBaselinerRenderer({ model }: SceneComponentProps<SceneBaseliner>) 
           e.preventDefault();
           model.onDiscoverSeasonalitiesChanged(!discoverSeasonalities);
         }}
-      >
-        <Checkbox
-          disabled={interval === undefined || pinned}
-          value={discoverSeasonalities ?? false}
-          onChange={() => model.onDiscoverSeasonalitiesChanged(!discoverSeasonalities)}
-        />
-      </ToolbarButton>
+        isHighlighted={discoverSeasonalities ?? false}
+        icon="gf-interpolation-smooth"
+        iconSize="sm"
+        iconOnly
+        className={styles.discoverSeasonalitiesButton}
+      />
 
       <ToolbarButton
         disabled={interval === undefined}
@@ -514,14 +513,11 @@ function SceneBaselinerRenderer({ model }: SceneComponentProps<SceneBaseliner>) 
           e.preventDefault();
           model.onPinnedChanged(!pinned);
         }}
-      >
-        <Checkbox
-          disabled={interval === undefined}
-          value={pinned ?? false}
-          onChange={() => model.onPinnedChanged(!pinned)}
-        />
-        <Icon size="sm" name="gf-pin" />
-      </ToolbarButton>
+        isHighlighted={pinned ?? false}
+        icon="gf-pin"
+        iconSize="sm"
+        iconOnly
+      />
     </ButtonGroup>
   );
 }
@@ -546,6 +542,10 @@ function getStyles(theme: GrafanaTheme2) {
           display: none;
         }
       }
+    `,
+    discoverSeasonalitiesButton: css`
+      padding-left: calc(1px / 8);
+      padding-right: 1px;
     `,
   }
 };
