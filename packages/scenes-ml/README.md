@@ -29,13 +29,13 @@ See that library for more information on the underlying algorithms.
 1. Run `npm set @grafana-ml:registry=https://us-npm.pkg.dev/grafanalabs-dev/ml-npm-dev/` to tell `npm` to use a custom registry to find `scenes-ml`.
 1. Run `npx google-artifactregistry-auth` and follow the instructions to authenticate with the custom npm registry.
 1. Install `@grafana-ml/scenes-ml` using `yarn add @grafana-ml/scenes-ml` or `npm install @grafana-ml/scenes-ml` to add `scenes-ml` to your dependencies.
+1. If using a plugin, ensure the create-plugin version is up to date by following [this guide][update-create-plugin-version]
 1. Update your plugin's webpack config to enable the `asyncWebAssembly` experiment option and to load WebAssembly modules from the correct path:
 
    ```typescript
    // in webpack.config.ts, alongside your package.json
    import type { Configuration } from 'webpack';
    import { merge } from 'webpack-merge';
-   import { getPluginId } from './.config/webpack/utils';
    import grafanaConfig from './.config/webpack/webpack.config';
 
    const config = async (env): Promise<Configuration> => {
@@ -45,48 +45,15 @@ See that library for more information on the underlying algorithms.
          // Required to load WASM modules.
          asyncWebAssembly: true,
        },
-       module: {
-         rules: [
-           // Required so that WASM modules are loaded from the correct path.
-           {
-             test: /\.wasm$/,
-             type: 'asset/resource',
-             generator: {
-               publicPath: `public/plugins/${getPluginId()}/`,
-             },
-           },
-         ],
-       },
      });
    };
 
    export default config;
    ```
 
+1. Make sure your `package.json` scripts refer to the new webpack config by following [this guide][extend-configuration]
 1. Import components from `@grafana-ml/scenes-ml` and use as normal!
 
-## Development
-
-To work on @grafana/scenes SDK, please follow the guides below.
-
-### Setting up @grafana/scenes with a local Grafana instance
-
-To setup scenes with local Grafana, the following setup is required:
-
-1. Clone the [Grafana Scenes repository](https://github.com/grafana/scenes/).
-1. Clone the [Grafana](https://github.com/grafana/grafana/) repository and follow the [Development guide](https://github.com/grafana/grafana/blob/main/contribute/developer-guide.md#developer-guide).
-1. Setup env variable `GRAFANA_PATH` to point to your Grafana repository directory, `export GRAFANA_PATH=<path-to-grafana-directory>`
-1. From Grafana Scenes root directory run `./scripts/dev.sh`. This will compile @grafana/scenes with watch mode enabled and link it to your Grafana.
-1. From Grafana directory run `yarn install`.
-
-### Setting up local version of @grafana/scenes with app plugin
-
-1. Run `YARN_IGNORE_PATH=1 yarn link` from `packages/scenes` directory.
-1. Run `yarn dev` from `packages/scenes` directory.
-1. Run `yarn link @grafana/scenes` from app plugin directory.
-1. Start app plugin development server.
-
-### Demo app
-
-Alternatively, use the [demo app](../scenes-app/README.md) included in this repository.
-
+[augurs]: https://github.com/grafana/augurs
+[update-create-plugin-version]: https://grafana.com/developers/plugin-tools/migration-guides/update-create-plugin-versions
+[extend-configuration]: https://grafana.com/developers/plugin-tools/create-a-plugin/extend-a-plugin/extend-configurations#3-update-the-packagejson-to-use-the-new-webpack-config

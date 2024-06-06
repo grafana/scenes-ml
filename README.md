@@ -26,33 +26,6 @@ See that library for more information on the underlying algorithms.
 
 See the [library README](./packages/scenes-ml/README.md) for usage documentation.
 
-`@grafana-ml/scenes-ml` is designed to be used in Grafana app plugins or Grafana core as a standard npm dependency. However, because of the WASM module in a dependency, a couple of changes are required to an app plugin's build process.
-
-1. Run `npm set @grafana-ml:registry=https://us-npm.pkg.dev/grafanalabs-dev/ml-npm-dev/` to tell `npm` to use a custom registry to find `scenes-ml`.
-1. Run `npx google-artifactregistry-auth` and follow the instructions to authenticate with the custom npm registry.
-1. Install `@grafana-ml/scenes-ml` using `yarn add @grafana-ml/scenes-ml` or `npm install @grafana-ml/scenes-ml` to add `scenes-ml` to your dependencies.
-1. Update your plugin's webpack config to enable the `asyncWebAssembly` experiment option:
-
-   ```typescript
-   // in webpack.config.ts, alongside your package.json
-   import type { Configuration } from 'webpack';
-   import { merge } from 'webpack-merge';
-   import { getPluginId } from './.config/webpack/utils';
-   import grafanaConfig from './.config/webpack/webpack.config';
-
-   const config = async (env): Promise<Configuration> => {
-     const baseConfig = grafanaConfig(env);
-     return merge(baseConfig, {
-       experiments: {
-         // Required to load WASM modules.
-         asyncWebAssembly: true,
-       },
-     });
-   };
-
-   export default config;
-   ```
-
 ## Development
 
 To work on `@grafana-ml/scenes-ml`, please follow the guides below.
@@ -69,3 +42,5 @@ To work on `@grafana-ml/scenes-ml`, please follow the guides below.
 Alternatively, use the [demo app](./packages/scenes-ml-app/README.md) included in this repository.
 
 [augurs]: https://github.com/grafana/augurs
+[update-create-plugin-version]: https://grafana.com/developers/plugin-tools/migration-guides/update-create-plugin-versions
+[extend-configuration]: https://grafana.com/developers/plugin-tools/create-a-plugin/extend-a-plugin/extend-configurations#3-update-the-packagejson-to-use-the-new-webpack-config
