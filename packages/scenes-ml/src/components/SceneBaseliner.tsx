@@ -1,6 +1,6 @@
 import { ets, seasonalities } from "@bsull/augurs";
 import { css, cx } from "@emotion/css";
-import { DataFrame, DataQueryRequest, dateTime, durationToMilliseconds, Field, FieldType, GrafanaTheme2, TimeRange } from "@grafana/data";
+import { DataFrame, DataQueryRequest, dateTime, durationToMilliseconds, Field, FieldType, GrafanaTheme2, PanelData, TimeRange } from "@grafana/data";
 import { FieldColorModeId } from "@grafana/schema";
 import { ButtonGroup, Checkbox, Slider, ToolbarButton, useStyles2 } from "@grafana/ui";
 import { Duration } from 'date-fns';
@@ -24,6 +24,10 @@ interface SceneBaselinerState extends SceneObjectState {
   // the amount of data to use as training data. Defaults to 4.0.
   trainingLookbackFactor?: number;
   trainingLookbackFactorOptions: Array<{ label: string; value: number }>;
+
+  // Whether the baseline results are pinned. If pinned, the results will not be recalculated
+  // when the time range (or other state) changes.
+  pinned?: boolean;
 }
 
 // Default to a 95% prediction interval.
@@ -46,6 +50,7 @@ export class SceneBaseliner extends SceneObjectBase<SceneBaselinerState>
 
   public static Component = SceneBaselinerRenderer;
   protected _urlSync = new SceneObjectUrlSyncConfig(this, { keys: ['discoverSeasonalities', 'interval', 'trainingLookbackFactor'] });
+  public latestData?: PanelData;
 
   public constructor(state: Partial<SceneBaselinerState>) {
     super({ trainingLookbackFactorOptions: DEFAULT_TRAINING_FACTOR_OPTIONS, ...state });
@@ -80,10 +85,13 @@ export class SceneBaseliner extends SceneObjectBase<SceneBaselinerState>
   public shouldRerun(prev: SceneBaselinerState, next: SceneBaselinerState): boolean {
     const wasEnabled = prev.interval !== undefined;
     const nowEnabled = next.interval !== undefined;
+    if (next.pinned && nowEnabled) {
+      return false;
+    }
     if (wasEnabled !== nowEnabled || prev.trainingLookbackFactor !== next.trainingLookbackFactor) {
       return true;
     }
-    if (prev.interval !== next.interval || prev.discoverSeasonalities !== next.discoverSeasonalities) {
+    if (prev.interval !== next.interval || prev.discoverSeasonalities !== next.discoverSeasonalities || prev.pinned !== next.pinned) {
       return true;
     }
     return false;
@@ -112,6 +120,14 @@ export class SceneBaseliner extends SceneObjectBase<SceneBaselinerState>
 
   public onClearFactor() {
     this.setState({ trainingLookbackFactor: undefined });
+  }
+
+  public onPinnedChanged(pinned: boolean) {
+    this.setState({ pinned });
+  }
+
+  public setLatestData(data: PanelData) {
+    this.latestData = data;
   }
 
   // Update the component state from the URL.
@@ -165,6 +181,12 @@ export class SceneBaseliner extends SceneObjectBase<SceneBaselinerState>
 // This function will take the secondary frame returned by the query runner and
 // produce a new frame with the baselines added.
 const baselineProcessor: (baseliner: SceneBaseliner) => ExtraQueryDataProcessor = (baseliner) => (_, secondary) => {
+  if (baseliner.state.interval === undefined) {
+    return of(secondary);
+  }
+  if (baseliner.state.pinned && baseliner.latestData) {
+    return of(baseliner.latestData);
+  }
   const { interval, discoverSeasonalities } = baseliner.state;
   const timeRange = sceneGraph.getTimeRange(baseliner);
   const baselines = secondary.series.map((series) => {
@@ -182,7 +204,9 @@ const baselineProcessor: (baseliner: SceneBaseliner) => ExtraQueryDataProcessor 
       fields: baselineFrame.fields,
     };
   });
-  return of({ ...secondary, series: baselines });
+  const data = { ...secondary, series: baselines };
+  baseliner.setLatestData(data);
+  return of(data);
 }
 
 // Seasonalities added by default.
@@ -424,17 +448,20 @@ function createFields(name: string, timeField: Field, times: number[], point: nu
 
 function SceneBaselinerRenderer({ model }: SceneComponentProps<SceneBaseliner>) {
   const styles = useStyles2(getStyles);
-  const { discoverSeasonalities, interval } = model.useState();
+  const { discoverSeasonalities, interval, pinned } = model.useState();
 
   const onClick = () => {
     model.onIntervalChanged(interval === undefined ? DEFAULT_INTERVAL : undefined);
+    if (interval !== undefined) {
+      model.onPinnedChanged(false);
+    }
   };
 
   const onChangeInterval = (i: number | undefined) => {
     model.onIntervalChanged(i);
   }
 
-  const sliderStyles = interval === undefined ? cx(styles.slider, styles.disabled) : styles.slider;
+  const sliderStyles = interval === undefined || pinned ? cx(styles.slider, styles.disabled) : styles.slider;
 
   return (
     <ButtonGroup>
@@ -463,20 +490,34 @@ function SceneBaselinerRenderer({ model }: SceneComponentProps<SceneBaseliner>) 
 
       <ToolbarButton
         variant="canvas"
-        disabled={interval === undefined}
+        disabled={interval === undefined || pinned}
         tooltip="Discover seasonalities"
         onClick={(e) => {
           e.stopPropagation();
           e.preventDefault();
           model.onDiscoverSeasonalitiesChanged(!discoverSeasonalities);
         }}
-      >
-        <Checkbox
-          disabled={interval === undefined}
-          value={discoverSeasonalities ?? false}
-          onChange={() => model.onDiscoverSeasonalitiesChanged(!discoverSeasonalities)}
-        />
-      </ToolbarButton>
+        isHighlighted={discoverSeasonalities ?? false}
+        icon="gf-interpolation-smooth"
+        iconSize="sm"
+        iconOnly
+        className={styles.discoverSeasonalitiesButton}
+      />
+
+      <ToolbarButton
+        disabled={interval === undefined}
+        variant="canvas"
+        tooltip="Pin baseline results"
+        onClick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          model.onPinnedChanged(!pinned);
+        }}
+        isHighlighted={pinned ?? false}
+        icon="gf-pin"
+        iconSize="sm"
+        iconOnly
+      />
     </ButtonGroup>
   );
 }
@@ -501,6 +542,10 @@ function getStyles(theme: GrafanaTheme2) {
           display: none;
         }
       }
+    `,
+    discoverSeasonalitiesButton: css`
+      padding-left: calc(1px / 8);
+      padding-right: 1px;
     `,
   }
 };
