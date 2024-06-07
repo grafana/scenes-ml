@@ -9,7 +9,7 @@
   <p>Add Machine Learning functionality to your Scenes.</p>
 </div>
 
-![](docusaurus/website/static/img/homepage.mp4)
+https://github.com/grafana/scenes-ml/assets/5464991/26440841-24c2-47f7-a1e1-e2ff97989e00
 
 ## What is this?
 
