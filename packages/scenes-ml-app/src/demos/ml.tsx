@@ -127,7 +127,7 @@ export function getMlDemo(defaults: SceneAppPageState) {
               children: [
                 new SceneFlexItem({
                   minWidth: '100%',
-                  minHeight: 500,
+                  minHeight: 300,
                   body: PanelBuilders.timeseries()
                     .setTitle('Outlier data')
                     .setData(getOutlierQueryRunner())
@@ -141,7 +141,7 @@ export function getMlDemo(defaults: SceneAppPageState) {
                 }),
                 new SceneFlexItem({
                   minWidth: '100%',
-                  minHeight: 500,
+                  minHeight: 300,
                   body: PanelBuilders.timeseries()
                     .setTitle('Simple wave')
                     .setData(getQueryRunnerWithCSVWaveQuery({}, { maxDataPointsFromWidth: true }))
@@ -151,7 +151,7 @@ export function getMlDemo(defaults: SceneAppPageState) {
 
                 new SceneFlexItem({
                   minWidth: '100%',
-                  minHeight: 500,
+                  minHeight: 300,
                   body: PanelBuilders.timeseries()
                     .setTitle('Spikey data with changepoints')
                     .setData(
@@ -168,7 +168,7 @@ export function getMlDemo(defaults: SceneAppPageState) {
                 }),
                 new SceneFlexItem({
                   minWidth: '100%',
-                  minHeight: 500,
+                  minHeight: 300,
                   body: PanelBuilders.timeseries()
                     .setTitle('Realistic repeated series')
                     .setData(
@@ -186,7 +186,7 @@ export function getMlDemo(defaults: SceneAppPageState) {
                 }),
                 new SceneFlexItem({
                   minWidth: '100%',
-                  minHeight: 500,
+                  minHeight: 300,
                   body: PanelBuilders.timeseries()
                     .setTitle('Sawtooth data')
                     .setData(

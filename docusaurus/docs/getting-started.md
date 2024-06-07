@@ -1,6 +1,6 @@
 ---
 id: getting-started
-title: Getting Started
+title: Setup
 ---
 
 This topic explains hows to install Scenes ML and use it within a Grafana App plugin.
