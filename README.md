@@ -9,6 +9,8 @@
   <p>Add Machine Learning functionality to your Scenes.</p>
 </div>
 
+![](docusaurus/website/static/img/homepage.mp4)
+
 ## What is this?
 
 This library contains a collection of `@grafana/scenes` objects which can be added to your Scenes to run interactive, responsive machine learning algorithms directly in the browser.
