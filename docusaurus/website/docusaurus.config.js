@@ -97,7 +97,7 @@ const config = {
             items: [
               {
                 label: 'Github Issues',
-                href: 'https://www.github.com/grafana/scenes/issues',
+                href: 'https://www.github.com/grafana/scenes-ml/issues',
               },
               {
                 label: 'Grafana Community Forums',
@@ -110,7 +110,7 @@ const config = {
             items: [
               {
                 label: 'GitHub',
-                href: 'https://www.github.com/grafana/scenes',
+                href: 'https://www.github.com/grafana/scenes-ml',
               },
             ],
           },

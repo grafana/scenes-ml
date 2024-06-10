@@ -27,7 +27,7 @@ const sidebars = {
       collapsible: true,
       collapsed: false,
       items: [
-        'forecasting',
+        'baselines-and-forecasts',
         'outlier-detection',
         'changepoint-detection',
       ],
