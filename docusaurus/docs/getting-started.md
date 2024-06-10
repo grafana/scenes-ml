@@ -27,6 +27,30 @@ npx google-artifactregistry-auth
 yarn add @grafana-ml/scenes-ml
 ```
 
+Finally, if you're writing a plugin, update your plugin's webpack config to enable the `asyncWebAssembly` experiment option and to load WebAssembly modules from the correct path:
+
+```typescript
+// in webpack.config.ts, alongside your package.json
+import type { Configuration } from 'webpack';
+import { merge } from 'webpack-merge';
+import grafanaConfig from './.config/webpack/webpack.config';
+
+const config = async (env): Promise<Configuration> => {
+  const baseConfig = grafanaConfig(env);
+  return merge(baseConfig, {
+    experiments: {
+      // Required to load WASM modules.
+      asyncWebAssembly: true,
+    },
+  });
+};
+
+export default config;
+```
+
+and make sure your `package.json` scripts refer to the new webpack config by following [this guide][extend-configuration].
+
+
 ## Add ML features to a scene
 
 ### 1. Create a scene
@@ -89,3 +113,5 @@ export const HelloMLPluginPage = () => {
 ## Source code
 
 [View the example source code](https://github.com/grafana/scenes-ml/tree/main/docusaurus/docs/getting-started.tsx)
+
+[extend-configuration]: https://grafana.com/developers/plugin-tools/create-a-plugin/extend-a-plugin/extend-configurations#3-update-the-packagejson-to-use-the-new-webpack-config
