@@ -3,7 +3,7 @@ import { matcherHint, printExpected, printReceived } from 'jest-matcher-utils';
 import { asapScheduler, Subscription, timer, isObservable } from 'rxjs';
 import { History } from 'history';
 import { render } from '@testing-library/react';
-import { SceneApp } from '../../src/components/SceneApp/SceneApp';
+import { SceneApp } from '@grafana/scenes';
 import { Router } from 'react-router-dom';
 
 export const OBSERVABLE_TEST_TIMEOUT_IN_MS = 1000;
