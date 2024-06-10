@@ -7,7 +7,7 @@ export interface DemoDescriptor {
 }
 
 export function getDemos(): DemoDescriptor[] {
-  return [{ title: 'Machine Learning functionality', getPage: getMlDemo }].sort((a, b) =>
+  return [{ title: 'Scenes ML', getPage: getMlDemo }].sort((a, b) =>
     a.title.localeCompare(b.title)
   );
 }
