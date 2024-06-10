@@ -480,7 +480,7 @@ function SceneBaselinerRenderer({ model }: SceneComponentProps<SceneBaseliner>) 
 
       <div className={sliderStyles}>
         <Slider
-          onChange={onChangeInterval}
+          onAfterChange={onChangeInterval}
           min={0.01}
           max={0.99}
           step={0.01}

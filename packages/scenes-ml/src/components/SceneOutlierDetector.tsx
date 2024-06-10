@@ -316,7 +316,7 @@ function SceneOutlierDetectorRenderer({ model }: SceneComponentProps<SceneOutlie
 
       <div className={sliderStyles}>
         <Slider
-          onChange={onChangeSensitivity}
+          onAfterChange={onChangeSensitivity}
           min={0.01}
           max={0.99}
           step={0.01}
