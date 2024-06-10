@@ -21,7 +21,7 @@ interface SceneChangepointDetectorState extends SceneObjectState {
 
   // Callback for when a changepoint is detected.
   // TODO: add series info to this.
-  onChangepointDetected?: ((changepoint: Changepoint) => void);
+  onChangepointDetected?: (changepoint: Changepoint) => void;
 }
 
 // TODO: make this customisable.

@@ -29,13 +29,15 @@
     "precommit": "yarn run lint-staged",
     "prepare": "husky install",
     "packages:publish": "lerna exec --no-private -- npm publish",
+    "build": "lerna run --ignore website --ignore grafana-scenes-ml --parallel build",
+    "dev": "lerna run --ignore website --ignore grafana-scenes-ml --parallel dev",
     "docs": "yarn workspace website run start --port 8080",
     "docs:build": "yarn workspace website run build",
     "test:lib": "lerna run test --scope '@grafana-ml/scenes-ml' --",
     "dev:lib": "lerna run dev --scope '@grafana-ml/scenes-ml' --",
     "dev:app": "lerna run dev --scope 'scenes-ml-app' --",
     "test": "lerna run test --scope '@grafana-ml/scenes-ml' -- --watch",
-    "typecheck": "lerna run typecheck",
+    "typecheck": "lerna run typecheck --scope @grafana-ml/scenes-ml",
     "set-registry-token": "yarn config set --home 'npmScopes[\"grafana-ml\"].npmAuthToken' $(gcloud auth print-access-token --project=grafanalabs-dev)"
   },
   "resolutions": {
