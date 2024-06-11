@@ -36,7 +36,7 @@
     "test:lib": "lerna run test --scope '@grafana/scenes-ml' --",
     "dev:lib": "lerna run dev --scope '@grafana/scenes-ml' --",
     "dev:app": "lerna run dev --scope 'scenes-ml-app' --",
-    "test": "lerna run test --scope '@grafana/scenes-ml' -- --watch",
+    "test": "lerna run test --scope '@grafana/scenes-ml'",
     "typecheck": "lerna run typecheck --scope @grafana/scenes-ml"
   },
   "resolutions": {
