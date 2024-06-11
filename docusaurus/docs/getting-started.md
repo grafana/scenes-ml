@@ -19,12 +19,12 @@ Alternatively, if you're adding Scenes ML to an existing Scenes app plugin, firs
 npx @grafana/create-plugin@latest --update
 ```
 
-Then add `@grafana-ml/scenes-ml` to your plugin by running the following commands in your project:
+Then add `@grafana/scenes-ml` to your plugin by running the following commands in your project:
 
 ```bash
-npm set @grafana-ml:registry=https://us-npm.pkg.dev/grafanalabs-dev/ml-npm-dev/
+npm set @grafana:registry=https://us-npm.pkg.dev/grafanalabs-dev/ml-npm-dev/
 npx google-artifactregistry-auth
-yarn add @grafana-ml/scenes-ml
+yarn add @grafana/scenes-ml
 ```
 
 Finally, if you're writing a plugin, update your plugin's webpack config to enable the `asyncWebAssembly` experiment option and to load WebAssembly modules from the correct path:
@@ -61,7 +61,7 @@ Create a scene using the snippet below. This will add a time series panel to the
 // helloMLScene.ts
 
 import { EmbeddedScene, SceneFlexLayout, SceneFlexItem, SceneQueryRunner, PanelBuilders, sceneUtils } from '@grafana/scenes';
-import { SceneBaseliner, MLDemoDS } from '@grafana-ml/scenes-ml';
+import { SceneBaseliner, MLDemoDS } from '@grafana/scenes-ml';
 
 // Register the demo datasource from `scenes-ml`.
 // This isn't required for normal usage, it just gives us some sensible demo data.

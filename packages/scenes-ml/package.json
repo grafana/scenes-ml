@@ -1,5 +1,5 @@
 {
-  "name": "@grafana-ml/scenes-ml",
+  "name": "@grafana/scenes-ml",
   "version": "0.1.0",
   "description": "Machine Learning extensions to Grafana Scenes",
   "author": "Grafana Labs",
@@ -31,9 +31,7 @@
     "test": "jest",
     "lint": "eslint --ignore-path ../../.gitignore . --ext .js,.tsx,.ts --cache",
     "prepack": "node ./scripts/prepack.js",
-    "postpack": "node ./scripts/postpack.js",
-    "artifactregistry-login": "yarn dlx google-artifactregistry-auth",
-    "set-registry-token": "yarn config set --home 'npmScopes[\"grafana-ml\"].npmAuthToken' $(gcloud auth print-access-token --project=grafanalabs-dev)"
+    "postpack": "node ./scripts/postpack.js"
   },
   "bugs": {
     "url": "https://github.com/grafana/scenes/issues"

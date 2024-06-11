@@ -1,5 +1,5 @@
 import { EmbeddedScene, SceneFlexLayout, SceneFlexItem, SceneQueryRunner, PanelBuilders, sceneUtils } from '@grafana/scenes';
-import { SceneBaseliner, MLDemoDS } from '@grafana-ml/scenes-ml';
+import { SceneBaseliner, MLDemoDS } from '@grafana/scenes-ml';
 
 // Register the demo datasource from `scenes-ml`.
 // This isn't required for normal usage, it just gives us some sensible demo data.

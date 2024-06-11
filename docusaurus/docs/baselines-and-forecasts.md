@@ -19,7 +19,7 @@ Baselines can be added to panels by using the `SceneBaseliner` component of `sce
 The code example below demonstrates how to add baselines to a time series panel.
 
 ```ts
-import { SceneBaseliner } from '@grafana-ml/scenes-ml';
+import { SceneBaseliner } from '@grafana/scenes-ml';
 
 // Default values are shown here, all are optional.
 const baseliner = new SceneBaseliner({

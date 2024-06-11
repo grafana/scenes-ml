@@ -16,7 +16,7 @@ import PinnedSvg from '/static/img/pinned.svg';
 The code example below demonstrates how to add outlier detection to a time series panel.
 
 ```ts
-import { SceneOutlierDetector } from '@grafana-ml/scenes-ml';
+import { SceneOutlierDetector } from '@grafana/scenes-ml';
 
 // Default values are shown here, all are optional.
 const outlierDetector = new SceneOutlierDetector({
