@@ -1,5 +1,5 @@
 import { ChangepointDetector } from "@bsull/augurs";
-import { DataFrame, DataQueryRequest, dateTime, FieldType } from "@grafana/data";
+import { DataFrame, DataQueryRequest, dateTime, Field, FieldType } from "@grafana/data";
 import { DataTopic } from "@grafana/schema";
 import { ButtonGroup, Checkbox, ToolbarButton } from "@grafana/ui";
 import React from 'react';
@@ -8,7 +8,9 @@ import { of } from "rxjs";
 import { SceneComponentProps, SceneObjectState, SceneObjectUrlValues, SceneObjectBase, SceneObjectUrlSyncConfig, ExtraQueryDataProcessor, ExtraQueryProvider, ExtraQueryDescriptor } from "@grafana/scenes";
 
 export interface Changepoint {
+  idx: number
   time: number;
+  field: Field<number>;
 }
 
 interface SceneChangepointDetectorState extends SceneObjectState {
@@ -20,7 +22,6 @@ interface SceneChangepointDetectorState extends SceneObjectState {
   lookbackFactorOptions: Array<{ label: string; value: number }>;
 
   // Callback for when a changepoint is detected.
-  // TODO: add series info to this.
   onChangepointDetected?: (changepoint: Changepoint) => void;
 }
 
@@ -161,7 +162,7 @@ function createChangepointAnnotations(
       const time = timeField.values[cp + 1];
       annotationTimes.push(time);
       annotationTexts.push('Changepoint detected');
-      onChangepointDetected?.({ time });
+      onChangepointDetected?.({ idx: cp + 1, time, field });
     }
   }
   return {
