@@ -2,6 +2,13 @@
   "npmClient": "yarn",
   "$schema": "node_modules/lerna/schemas/lerna-schema.json",
   "version": "0.1.0",
-  "packages": ["packages/*"],
-  "useWorkspaces": true
+  "packages": [
+    "packages/*"
+  ],
+  "useWorkspaces": true,
+  "command": {
+    "publish": {
+      "verifyAccess": false
+    }
+  }
 }
