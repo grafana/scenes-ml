@@ -33,12 +33,11 @@
     "dev": "lerna run --ignore website --ignore grafana-scenes-ml --parallel dev",
     "docs": "yarn workspace website run start --port 8080",
     "docs:build": "yarn workspace website run build",
-    "test:lib": "lerna run test --scope '@grafana-ml/scenes-ml' --",
-    "dev:lib": "lerna run dev --scope '@grafana-ml/scenes-ml' --",
+    "test:lib": "lerna run test --scope '@grafana/scenes-ml' --",
+    "dev:lib": "lerna run dev --scope '@grafana/scenes-ml' --",
     "dev:app": "lerna run dev --scope 'scenes-ml-app' --",
-    "test": "lerna run test --scope '@grafana-ml/scenes-ml' -- --watch",
-    "typecheck": "lerna run typecheck --scope @grafana-ml/scenes-ml",
-    "set-registry-token": "yarn config set --home 'npmScopes[\"grafana-ml\"].npmAuthToken' $(gcloud auth print-access-token --project=grafanalabs-dev)"
+    "test": "lerna run test --scope '@grafana/scenes-ml' -- --watch",
+    "typecheck": "lerna run typecheck --scope @grafana/scenes-ml"
   },
   "resolutions": {
     "@types/react": "18.2.74"

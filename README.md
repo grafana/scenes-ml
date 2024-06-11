@@ -5,7 +5,7 @@
     width="100px"
     padding="40px"
   />
-  <h1>@grafana-ml/scenes-ml</h1>
+  <h1>@grafana/scenes-ml</h1>
   <p>Add Machine Learning functionality to your Scenes.</p>
   <video
     autoPlay
@@ -18,7 +18,7 @@
 
 This library contains a collection of `@grafana/scenes` objects which can be added to your Scenes to run interactive, responsive machine learning algorithms directly in the browser.
 
-`@grafana-ml/scenes-ml` currently contains implementations of the following:
+`@grafana/scenes-ml` currently contains implementations of the following:
 
 - forecasting (using the MSTL/ETS algorithms)
 - outlier detection (using the median absolute difference or DBSCAN algorithms)
@@ -33,13 +33,13 @@ See the [library README](./packages/scenes-ml/README.md) for usage documentation
 
 ## Development
 
-To work on `@grafana-ml/scenes-ml`, please follow the guides below.
+To work on `@grafana/scenes-ml`, please follow the guides below.
 
-### Setting up local version of `@grafana-ml/scenes-ml` with an app plugin
+### Setting up local version of `@grafana/scenes-ml` with an app plugin
 
 1. Run `YARN_IGNORE_PATH=1 yarn link` from `packages/scenes-ml` directory.
 1. Run `yarn dev` from `packages/scenes-ml` directory.
-1. Run `yarn link @grafana-ml/scenes-ml` from app plugin directory.
+1. Run `yarn link @grafana/scenes-ml` from app plugin directory.
 1. Start app plugin development server.
 
 ### Demo app

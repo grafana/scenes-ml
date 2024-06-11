@@ -20,7 +20,7 @@ Changepoint detection is currently a beta feature. The underlying algorithm may 
 The code example below demonstrates how to add changepoint detection to a time series panel.
 
 ```ts
-import { SceneChangepointDetector } from '@grafana-ml/scenes-ml';
+import { SceneChangepointDetector } from '@grafana/scenes-ml';
 
 // Default values are shown here, all are optional.
 const changepointDetector = new SceneChangepointDetector({
