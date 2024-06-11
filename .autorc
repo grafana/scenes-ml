@@ -16,5 +16,8 @@
         "labels": "no-changelog"
       }
     ]
-  ]
+  ],
+  "shipit": {
+    "prerelease": true
+  }
 }
