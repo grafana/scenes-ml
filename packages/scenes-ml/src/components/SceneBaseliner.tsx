@@ -9,6 +9,24 @@ import React from 'react';
 import { sceneGraph, SceneComponentProps, SceneObjectState, SceneObjectUrlValues, SceneObjectBase, SceneObjectUrlSyncConfig, ExtraQueryDescriptor, ExtraQueryProvider, ExtraQueryDataProcessor } from "@grafana/scenes";
 import { of } from "rxjs";
 
+// The direction of an anomaly.
+//
+// `upper` indicates that the value is above the upper prediction interval.
+// `lower` indicates that the value is below the lower prediction interval.
+type AnomalyDirection = 'upper' | 'lower';
+
+// An anomaly detected by the baseliner.
+interface Anomaly {
+  // The direction of the anomaly.
+  direction: AnomalyDirection;
+  // The index of the anomaly.
+  idx: number;
+  // The time of the anomaly.
+  time: number;
+  // The field that the anomaly was detected in.
+  field: Field<number>;
+}
+
 interface SceneBaselinerState extends SceneObjectState {
   // The prediction interval to use. Must be between 0 and 1.
   // Defaults to 0.95.
@@ -28,6 +46,10 @@ interface SceneBaselinerState extends SceneObjectState {
   // Whether the baseline results are pinned. If pinned, the results will not be recalculated
   // when the time range (or other state) changes.
   pinned?: boolean;
+
+  // Callback for when an anomaly is detected; i.e. when the series' value
+  // is outside the prediction interval.
+  onAnomalyDetected?: (anomaly: Anomaly) => void;
 }
 
 // Default to a 95% prediction interval.
@@ -187,10 +209,17 @@ const baselineProcessor: (baseliner: SceneBaseliner) => ExtraQueryDataProcessor 
   if (baseliner.state.pinned && baseliner.latestData) {
     return of(baseliner.latestData);
   }
-  const { interval, discoverSeasonalities } = baseliner.state;
+  const { interval, discoverSeasonalities, onAnomalyDetected } = baseliner.state;
   const timeRange = sceneGraph.getTimeRange(baseliner);
   const baselines = secondary.series.map((series) => {
-    const baselineFrame = createBaselinesForFrame(series, interval, undefined, discoverSeasonalities, timeRange.state.value);
+    const baselineFrame = createBaselinesForFrame(
+      series,
+      interval,
+      undefined,
+      discoverSeasonalities,
+      timeRange.state.value,
+      onAnomalyDetected,
+    );
     return {
       ...series,
       meta: {
@@ -289,6 +318,7 @@ function createBaselinesForFrame(
   extraSeasonalities?: Duration[],
   discoverSeasonalities = false,
   timeRange?: TimeRange,
+  onAnomalyDetected?: (anomaly: Anomaly) => void,
 ): DataFrame {
   const canAdd = canAddBaseline(frame);
   if (!canAdd) {
@@ -367,6 +397,19 @@ function createBaselinesForFrame(
       if (lower && upper && outOfSample.intervals) {
         lower = lower.concat(Array.from(outOfSample.intervals.lower));
         upper = upper.concat(Array.from(outOfSample.intervals.upper));
+      }
+    }
+  }
+
+  if (onAnomalyDetected !== undefined && lower && upper) {
+    for (let idx = 0; idx < values.length; idx++) {
+      const value = values[idx];
+      const lowerValue = lower[idx];
+      const upperValue = upper[idx];
+      if (value < lowerValue) {
+        onAnomalyDetected({ direction: 'lower', idx, time: times[idx], field: numField });
+      } else if (value > upperValue) {
+        onAnomalyDetected({ direction: 'upper', idx, time: times[idx], field: numField });
       }
     }
   }
