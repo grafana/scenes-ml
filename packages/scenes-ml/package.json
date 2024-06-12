@@ -4,7 +4,7 @@
   "description": "Machine Learning extensions to Grafana Scenes",
   "author": "Grafana Labs",
   "license": "AGPL-3.0-only",
-  "homepage": "https://github.com/grafana/scenes/blob/main/packages/scenes-ml/README.md",
+  "homepage": "https://github.com/grafana/scenes-ml/blob/main/packages/scenes-ml/README.md",
   "main": "dist/index.js",
   "types": "src/index.ts",
   "module": "dist/esm/index.js",
