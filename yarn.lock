@@ -4461,6 +4461,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@grafana/e2e-selectors@npm:^11.0.0":
+  version: 11.0.0
+  resolution: "@grafana/e2e-selectors@npm:11.0.0"
+  dependencies:
+    "@grafana/tsconfig": "npm:^1.3.0-rc1"
+    tslib: "npm:2.6.2"
+    typescript: "npm:5.3.3"
+  checksum: 10/0e327c5afc342bca9be46b0b3fb7b55d69e8b7b6e9912be3255ce52abcb8832265246a0e6b2f877112a752b6e44f6f7edf5c4d2a32b5edc84800d19c880dfc6c
+  languageName: node
+  linkType: hard
+
 "@grafana/e2e@npm:10.3.3":
   version: 10.3.3
   resolution: "@grafana/e2e@npm:10.3.3"
@@ -4593,7 +4604,7 @@ __metadata:
     "@grafana/data": "npm:^10.0.3"
     "@grafana/eslint-config": "npm:5.1.0"
     "@grafana/runtime": "npm:^10.0.3"
-    "@grafana/scenes": "npm:^4.26.1"
+    "@grafana/scenes": "npm:>4.26.1"
     "@grafana/schema": "npm:^10.0.3"
     "@grafana/tsconfig": "npm:^1.3.0-rc1"
     "@grafana/ui": "npm:^10.0.3"
@@ -4656,6 +4667,27 @@ __metadata:
     react-dom: ^18.0.0
   languageName: unknown
   linkType: soft
+
+"@grafana/scenes@npm:>4.26.1":
+  version: 5.2.1
+  resolution: "@grafana/scenes@npm:5.2.1"
+  dependencies:
+    "@grafana/e2e-selectors": "npm:^11.0.0"
+    "@leeoniya/ufuzzy": "npm:^1.0.14"
+    react-grid-layout: "npm:1.3.4"
+    react-use: "npm:17.5.0"
+    react-virtualized-auto-sizer: "npm:1.0.24"
+    uuid: "npm:^9.0.0"
+  peerDependencies:
+    "@grafana/data": ^10.4.1
+    "@grafana/runtime": ^10.4.1
+    "@grafana/schema": ^10.4.1
+    "@grafana/ui": ^10.4.1
+    react: ^18.0.0
+    react-dom: ^18.0.0
+  checksum: 10/c7e065b099d9ab47b50766dadcd6cb656965b004c59450f88317f54c9989feb3c07ea3b16694b7bd1fafa70156442c943a1e53b2c4a32c71e0b2125903cdc6af
+  languageName: node
+  linkType: hard
 
 "@grafana/scenes@npm:^4.26.1":
   version: 4.26.1
@@ -24267,6 +24299,16 @@ __metadata:
     react: "*"
     react-dom: "*"
   checksum: 10/5d81fe0902303d3ed7810cdd56c6cae12b08124a3d4fcbfa3924327105b81447b039ea9d6aff20aac3c13999f949000870a7a2fa29fe20ed844ac26606462fa0
+  languageName: node
+  linkType: hard
+
+"react-virtualized-auto-sizer@npm:1.0.24":
+  version: 1.0.24
+  resolution: "react-virtualized-auto-sizer@npm:1.0.24"
+  peerDependencies:
+    react: ^15.3.0 || ^16.0.0-alpha || ^17.0.0 || ^18.0.0
+    react-dom: ^15.3.0 || ^16.0.0-alpha || ^17.0.0 || ^18.0.0
+  checksum: 10/02101a340bdbe3e40c49dbc52e524eb7ca18832690e91f045a25675600d7adc0a63e800a4ace6a014132adcdcce0e12a8137971de408427a5a3112d7c87c9f3e
   languageName: node
   linkType: hard
 
