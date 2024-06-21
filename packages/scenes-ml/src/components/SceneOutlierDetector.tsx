@@ -8,10 +8,13 @@ import { SceneComponentProps, SceneObjectState, SceneObjectUrlValues, SceneObjec
 import { css, cx } from '@emotion/css';
 import { of } from 'rxjs';
 
-
+// A subset of an outlying series, with a start and end time.
 interface Outlier {
+  // The index of the series in the data frame.
   series: number;
+  // The start time of the outlier.
   start: number;
+  // The end time of the outlier, if it's a region.
   end: number;
 }
 
