@@ -2,20 +2,12 @@
   "extends": "@grafana/tsconfig/tsconfig.json",
   "compilerOptions": {
     "declaration": true,
-    "declarationDir": "./compiled",
+    "declarationDir": "./dist/types",
     "emitDeclarationOnly": true,
-    "isolatedModules": true,
-    "rootDirs": [
-      "."
-    ]
+    "isolatedModules": true
   },
-  "exclude": [
-    "dist/**/*"
-  ],
-  "include": [
-    "utils/**/*.ts*",
-    "src/**/*.ts*"
-  ],
+  "exclude": ["dist/**/*"],
+  "include": ["utils/**/*.ts*", "src/**/*.ts*"],
   "ts-node": {
     "compilerOptions": {
       "isolatedModules": false,

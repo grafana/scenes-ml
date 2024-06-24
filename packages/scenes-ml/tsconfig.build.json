@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "paths": {}
+    "baseUrl": "src",
+    "rootDir": "src"
   },
   "exclude": ["**/*.story.tsx", "**/*.test.ts*", "**/*.tmpl.ts", "dist", "utils"],
   "extends": "./tsconfig.json"
