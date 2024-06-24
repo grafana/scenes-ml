@@ -1,3 +1,6 @@
+import { SceneBaseliner } from '@grafana/scenes-ml';
+import {MLDemoDS} from '@grafana/scenes-ml/testing';
+
 export const testIds = {
   appConfig: {
     container: 'data-testid ac-container',
