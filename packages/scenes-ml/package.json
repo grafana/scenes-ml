@@ -5,14 +5,32 @@
   "author": "Grafana Labs",
   "license": "AGPL-3.0-only",
   "homepage": "https://github.com/grafana/scenes-ml/blob/main/packages/scenes-ml/README.md",
-  "main": "dist/index.js",
-  "types": "src/index.ts",
+  "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
-  "directories": {
-    "src": "src"
+  "types": "index.d.ts",
+  "typesVersions": {
+    ">=4.2": {
+      "*": [
+        "dist/types/*"
+      ]
+    }
+  },
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "require": "./dist/cjs/index.js",
+      "import": "./dist/esm/index.js"
+    },
+    "./testing": {
+      "types": "./dist/types/testing/index.d.ts",
+      "require": "./dist/cjs/testing/index.js",
+      "import": "./dist/esm/testing/index.js"
+    }
   },
   "files": [
     "dist",
+    "testing",
     "./README.md",
     "./CHANGELOG.md",
     "LICENSE"
@@ -24,7 +42,7 @@
   "scripts": {
     "tsc": "tsc -p ./tsconfig.build.json",
     "dev": "yarn clean && yarn build:dev --watch",
-    "build": "rollup -c rollup.config.ts",
+    "build": "yarn clean && yarn tsc && rollup -c rollup.config.ts && node scripts/generate-ts-aliases.js",
     "build:dev": "yarn build --environment NODE_ENV:development",
     "clean": "rimraf ./dist ./compiled ./package.tgz",
     "typecheck": "tsc --emitDeclarationOnly false --noEmit",
@@ -116,6 +134,5 @@
     "*.{json,scss,md,mdx}": [
       "prettier --write"
     ]
-  },
-  "packageManager": "yarn@4.1.1"
+  }
 }
