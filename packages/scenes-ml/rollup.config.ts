@@ -1,6 +1,5 @@
 import resolve from '@rollup/plugin-node-resolve';
 import path from 'path';
-import dts from 'rollup-plugin-dts';
 import esbuild from 'rollup-plugin-esbuild';
 import eslint from '@rollup/plugin-eslint';
 import { externals } from 'rollup-plugin-node-externals';
@@ -17,13 +16,14 @@ const plugins = [
 
 export default [
   {
-    input: 'src/index.ts',
+    input: ['src/index.ts', 'src/testing/index.ts'],
     plugins: env === 'development' ? [ftc(), ...plugins] : plugins,
     output: [
       {
         format: 'cjs',
         sourcemap: env === 'production' ? true : 'inline',
         dir: path.dirname(pkg.main),
+        preserveModules: true,
       },
       {
         format: 'esm',
@@ -34,14 +34,6 @@ export default [
     ],
     watch: {
       include: './src/**/*',
-    },
-  },
-  {
-    input: 'src/index.ts',
-    plugins: [dts()],
-    output: {
-      file: './dist/index.d.ts',
-      format: 'es',
     },
   },
 ];
