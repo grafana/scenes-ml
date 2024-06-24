@@ -42,9 +42,7 @@
   "resolutions": {
     "@types/react": "18.2.74"
   },
-  "packageManager": "yarn@4.1.1",
   "workspaces": [
-    ".",
     "packages/*",
     "docusaurus/website"
   ],
@@ -55,5 +53,6 @@
     "auto": "^11.0.7",
     "lerna": "^6.5.1",
     "lint-staged": "^13.2.0"
-  }
+  },
+  "packageManager": "yarn@4.3.1"
 }
