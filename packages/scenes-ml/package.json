@@ -38,12 +38,12 @@
   },
   "dependencies": {
     "@bsull/augurs": "0.2.0",
-    "@grafana/scenes": ">4.26.1",
     "date-fns": "^3.6.0"
   },
   "peerDependencies": {
     "@grafana/data": "^10.0.3",
     "@grafana/runtime": "^10.0.3",
+    "@grafana/scenes": ">=4.26.1",
     "@grafana/schema": "^10.0.3",
     "@grafana/ui": "^10.0.3",
     "react": "^18.0.0",
