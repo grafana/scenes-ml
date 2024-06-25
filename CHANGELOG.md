@@ -1,3 +1,16 @@
+# v0.2.0 (Tue Jun 25 2024)
+
+#### 🚀 Enhancement
+
+- `@grafana/scenes-ml`
+  - Use a peer dependency for scenes instead of a regular dependency [#31](https://github.com/grafana/scenes-ml/pull/31) ([@sd2k](https://github.com/sd2k))
+
+#### Authors: 1
+
+- Ben Sully ([@sd2k](https://github.com/sd2k))
+
+---
+
 # v0.1.1 (Fri Jun 21 2024)
 
 #### 🐛 Bug Fix
