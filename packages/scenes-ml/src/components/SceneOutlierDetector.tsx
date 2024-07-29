@@ -157,7 +157,7 @@ function addOutliers(detector: LoadedOutlierDetector, data: PanelData, joined: D
   const outliers = detector.detect();
 
   if (onOutlierDetected !== undefined) {
-    const idx = 0;
+    let idx = 0;
     for (const s of outliers.seriesResults) {
       for (const i of s.outlierIntervals) {
         onOutlierDetected({
@@ -166,6 +166,7 @@ function addOutliers(detector: LoadedOutlierDetector, data: PanelData, joined: D
           end: joined.fields[0].values[i.end ?? nTimestamps - 1],
         });
       }
+      idx+=1;
     }
   }
 
