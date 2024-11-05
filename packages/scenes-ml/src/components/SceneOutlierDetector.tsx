@@ -2,7 +2,7 @@ import React from 'react';
 import { LoadedOutlierDetector, OutlierDetector } from "@bsull/augurs";
 import { DataFrame, DataQueryRequest, FieldType, GrafanaTheme2, PanelData, colorManipulator, outerJoinDataFrames } from "@grafana/data";
 import { DataTopic, FieldColorModeId } from "@grafana/schema";
-import { ButtonGroup, Checkbox, Slider, ToolbarButton, Tooltip, useStyles2 } from "@grafana/ui";
+import { ButtonGroup, Checkbox, RadioButtonGroup, Slider, ToolbarButton, Tooltip, useStyles2 } from "@grafana/ui";
 
 import { SceneComponentProps, SceneObjectState, SceneObjectUrlValues, SceneObjectBase, SceneObjectUrlSyncConfig, ExtraQueryProvider, ExtraQueryDescriptor } from "@grafana/scenes";
 import { css, cx } from '@emotion/css';
@@ -18,11 +18,27 @@ interface Outlier {
   end: number;
 }
 
+// The algorithm to use for outlier detection.
+//
+// `dbscan` uses a density-based clustering algorithm to detect outliers.
+// `mad` uses the median absolute deviation to detect outliers.
+//
+// The default is `dbscan`.
+type OutlierDetectorAlgorithm = 'dbscan' | 'mad';
+
 interface SceneOutlierDetectorState extends SceneObjectState {
+  // The sensitivity of the outlier detector. Must be between 0 and 1.
   sensitivity?: number;
+  // Whether to add annotations to the time series panel when outliers
+  // are detected..
   addAnnotations?: boolean;
+  // Callback for when an outlier is detected.
   onOutlierDetected?: (outlier: Outlier) => void;
+  // Whether the outlier results are pinned. If pinned, the results will not be recalculated
+  // when the time range (or other state) changes.
   pinned?: boolean;
+  /// The algorithm to use for outlier detection.
+  algorithm?: OutlierDetectorAlgorithm;
 }
 
 const DEFAULT_SENSITIVITY = 0.5;
@@ -44,6 +60,10 @@ export class SceneOutlierDetector extends SceneObjectBase<SceneOutlierDetectorSt
     super(state);
   }
 
+  public onAlgorithmChanged(algorithm: OutlierDetectorAlgorithm) {
+    this.setState({ algorithm });
+  }
+
   public onSensitivityChanged(sensitivity: number | undefined) {
     this.setState({ sensitivity });
   }
@@ -61,7 +81,7 @@ export class SceneOutlierDetector extends SceneObjectBase<SceneOutlierDetectorSt
   }
 
   public getExtraQueries(primary: DataQueryRequest): ExtraQueryDescriptor[] {
-    const { sensitivity } = this.state;
+    const { sensitivity, algorithm } = this.state;
     return sensitivity === undefined ? [] : [
       {
         req: {
@@ -87,7 +107,7 @@ export class SceneOutlierDetector extends SceneObjectBase<SceneOutlierDetectorSt
           if (this.detector !== undefined && data.request?.requestId === this.lastRequestId) {
             this.detector.updateDetector({ sensitivity });
           } else {
-            this.detector = createDetector(joined, sensitivity);
+            this.detector = createDetector(algorithm ?? 'dbscan', joined, sensitivity);
           }
           this.lastRequestId = data.request?.requestId;
           const dataWithOutliers = addOutliers(this.detector, data, joined, this.state.addAnnotations ?? true, this.state.onOutlierDetected);
@@ -102,7 +122,7 @@ export class SceneOutlierDetector extends SceneObjectBase<SceneOutlierDetectorSt
     if (next.pinned) {
       return false;
     }
-    return prev.sensitivity !== next.sensitivity || prev.addAnnotations !== next.addAnnotations || prev.pinned !== next.pinned;
+    return prev.sensitivity !== next.sensitivity || prev.addAnnotations !== next.addAnnotations || prev.pinned !== next.pinned || prev.algorithm !== next.algorithm;
   }
 
   // Get the URL state for the component.
@@ -142,11 +162,16 @@ export class SceneOutlierDetector extends SceneObjectBase<SceneOutlierDetectorSt
   }
 }
 
-function createDetector(data: DataFrame, sensitivity: number): LoadedOutlierDetector {
+function createDetector(algorithm: OutlierDetectorAlgorithm, data: DataFrame, sensitivity: number): LoadedOutlierDetector {
   // Get number fields: these are our series.
   const serieses = data.fields.filter(f => f.type === FieldType.number);
   const points = serieses.map((series) => new Float64Array(series.values));
-  return OutlierDetector.dbscan({ sensitivity }).preprocess(points);
+  switch (algorithm) {
+    case 'dbscan':
+      return OutlierDetector.dbscan({ sensitivity }).preprocess(points);
+    case 'mad':
+      return OutlierDetector.mad({ sensitivity }).preprocess(points);
+  }
 }
 
 function addOutliers(detector: LoadedOutlierDetector, data: PanelData, joined: DataFrame, addAnnotations: boolean, onOutlierDetected?: (outlier: Outlier) => void): PanelData {
@@ -288,11 +313,15 @@ function addOutliers(detector: LoadedOutlierDetector, data: PanelData, joined: D
 
 function SceneOutlierDetectorRenderer({ model }: SceneComponentProps<SceneOutlierDetector>) {
   const styles = useStyles2(getStyles);
-  const { addAnnotations, pinned, sensitivity } = model.useState();
+  const { addAnnotations, pinned, sensitivity, algorithm } = model.useState();
 
   const onClick = () => {
     model.onSensitivityChanged(sensitivity === undefined ? DEFAULT_SENSITIVITY : undefined);
   };
+
+  const onChangeAlgorithm = (v: OutlierDetectorAlgorithm) => {
+    model.onAlgorithmChanged(v);
+  }
 
   const onChangeSensitivity = (e: number | undefined) => {
     model.onSensitivityChanged(e);
@@ -314,6 +343,18 @@ function SceneOutlierDetectorRenderer({ model }: SceneComponentProps<SceneOutlie
         <Checkbox label=" " value={sensitivity !== undefined} onClick={onClick} />
         Outliers
       </ToolbarButton>
+
+      <Tooltip content="The model to use for outlier detection.">
+        <div>
+          <RadioButtonGroup
+            options={[{ label: 'DBSCAN', value: 'dbscan' }, { label: 'MAD', value: 'mad' }]}
+            disabled={sensitivity === undefined}
+            value={algorithm ?? 'dbscan'}
+            onChange={v => (v === "dbscan" || v == "mad") && onChangeAlgorithm(v)}
+            size="md"
+          />
+        </div>
+      </Tooltip>
 
       <Tooltip content="The sensitivity of the outlier detector.">
         <div className={sliderStyles}>
