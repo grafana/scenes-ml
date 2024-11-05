@@ -2,7 +2,7 @@ import React from 'react';
 import { LoadedOutlierDetector, OutlierDetector } from "@bsull/augurs";
 import { DataFrame, DataQueryRequest, FieldType, GrafanaTheme2, PanelData, colorManipulator, outerJoinDataFrames } from "@grafana/data";
 import { DataTopic, FieldColorModeId } from "@grafana/schema";
-import { ButtonGroup, Checkbox, Slider, ToolbarButton, useStyles2 } from "@grafana/ui";
+import { ButtonGroup, Checkbox, Slider, ToolbarButton, Tooltip, useStyles2 } from "@grafana/ui";
 
 import { SceneComponentProps, SceneObjectState, SceneObjectUrlValues, SceneObjectBase, SceneObjectUrlSyncConfig, ExtraQueryProvider, ExtraQueryDescriptor } from "@grafana/scenes";
 import { css, cx } from '@emotion/css';
@@ -85,7 +85,7 @@ export class SceneOutlierDetector extends SceneObjectBase<SceneOutlierDetectorSt
           // on every rerun, which needs a change to the `shouldRerun` signature.
           // See https://github.com/grafana/scenes/pull/748 for one possible option.
           if (this.detector !== undefined && data.request?.requestId === this.lastRequestId) {
-            this.detector.updateDetector({ dbscan: { sensitivity } });
+            this.detector.updateDetector({ sensitivity });
           } else {
             this.detector = createDetector(joined, sensitivity);
           }
@@ -145,9 +145,8 @@ export class SceneOutlierDetector extends SceneObjectBase<SceneOutlierDetectorSt
 function createDetector(data: DataFrame, sensitivity: number): LoadedOutlierDetector {
   // Get number fields: these are our series.
   const serieses = data.fields.filter(f => f.type === FieldType.number);
-  const nTimestamps = serieses[0].values.length;
-  const points = new Float64Array(serieses.flatMap((series) => series.values as number[]));
-  return OutlierDetector.dbscan({ sensitivity }).preprocess(points, nTimestamps);
+  const points = serieses.map((series) => new Float64Array(series.values));
+  return OutlierDetector.dbscan({ sensitivity }).preprocess(points);
 }
 
 function addOutliers(detector: LoadedOutlierDetector, data: PanelData, joined: DataFrame, addAnnotations: boolean, onOutlierDetected?: (outlier: Outlier) => void): PanelData {
@@ -166,7 +165,7 @@ function addOutliers(detector: LoadedOutlierDetector, data: PanelData, joined: D
           end: joined.fields[0].values[i.end ?? nTimestamps - 1],
         });
       }
-      idx+=1;
+      idx += 1;
     }
   }
 
@@ -216,75 +215,73 @@ function addOutliers(detector: LoadedOutlierDetector, data: PanelData, joined: D
   // Should return:
   // - The original data with a new label field indicating whether it's an outlier or not
   // - New fields for minimum and maximum bands of the cluster
+  const fields = [
+    // Always include the time field.
+    joined.fields[0],
+    ...joined.fields.slice(1).map((f, i) => ({
+      ...f,
+      config: {
+        ...f.config,
+        ...(outliers.outlyingSeries.includes(i) ? {
+          color: {
+            fixedColor: '#f5b73d',
+            mode: FieldColorModeId.Fixed,
+          },
+        } : {
+          color: {
+            fixedColor: notOutlierColor,
+            mode: FieldColorModeId.Fixed,
+          }
+        }),
+      }
+    })),
+  ];
+  if (outliers.clusterBand) {
+    fields.push({
+      name: 'clusterMin',
+      type: FieldType.number,
+      values: outliers.clusterBand.min,
+      config: {
+        displayNameFromDS: 'Cluster Min',
+        color: {
+          fixedColor: 'gray',
+          mode: FieldColorModeId.Fixed,
+        },
+        custom: {
+          lineWidth: 0,
+          hideFrom: {
+            viz: false,
+            tooltip: false,
+            legend: true,
+          }
+        },
+      }
+    });
+    fields.push({
+      name: 'clusterMax',
+      type: FieldType.number,
+      values: outliers.clusterBand.max,
+      config: {
+        displayNameFromDS: 'Cluster Max',
+        color: {
+          fixedColor: 'gray',
+          mode: FieldColorModeId.Fixed,
+        },
+        custom: {
+          fillBelowTo: `Cluster Min`,
+          lineWidth: 0,
+          hideFrom: {
+            viz: false,
+            tooltip: false,
+            legend: true,
+          }
+        },
+      }
+    });
+  }
   return {
     ...data,
-    series: [
-      {
-        ...joined,
-        fields: [
-          // Always include the time field.
-          joined.fields[0],
-          ...joined.fields.slice(1).map((f, i) => ({
-            ...f,
-            config: {
-              ...f.config,
-              ...(outliers.outlyingSeries.includes(i) ? {
-                color: {
-                  fixedColor: '#f5b73d',
-                  mode: FieldColorModeId.Fixed,
-                },
-              } : {
-                color: {
-                  fixedColor: notOutlierColor,
-                  mode: FieldColorModeId.Fixed,
-                }
-              }),
-            }
-          })),
-          {
-            name: 'clusterMin',
-            type: FieldType.number,
-            values: outliers.clusterBand.min,
-            config: {
-              displayNameFromDS: 'Cluster Min',
-              color: {
-                fixedColor: 'gray',
-                mode: FieldColorModeId.Fixed,
-              },
-              custom: {
-                lineWidth: 0,
-                hideFrom: {
-                  viz: false,
-                  tooltip: false,
-                  legend: true,
-                }
-              },
-            }
-          },
-          {
-            name: 'clusterMax',
-            type: FieldType.number,
-            values: outliers.clusterBand.max,
-            config: {
-              displayNameFromDS: 'Cluster Max',
-              color: {
-                fixedColor: 'gray',
-                mode: FieldColorModeId.Fixed,
-              },
-              custom: {
-                fillBelowTo: `Cluster Min`,
-                lineWidth: 0,
-                hideFrom: {
-                  viz: false,
-                  tooltip: false,
-                  legend: true,
-                }
-              },
-            }
-          },
-        ],
-      },
-    ],
+    series: [{ ...joined, fields }],
     annotations,
   };
 }
@@ -318,15 +315,17 @@ function SceneOutlierDetectorRenderer({ model }: SceneComponentProps<SceneOutlie
         Outliers
       </ToolbarButton>
 
-      <div className={sliderStyles}>
-        <Slider
-          onAfterChange={onChangeSensitivity}
-          min={0.01}
-          max={0.99}
-          step={0.01}
-          value={sensitivity ?? DEFAULT_SENSITIVITY}
-        />
-      </div>
+      <Tooltip content="The sensitivity of the outlier detector.">
+        <div className={sliderStyles}>
+          <Slider
+            onAfterChange={onChangeSensitivity}
+            min={0.01}
+            max={0.99}
+            step={0.01}
+            value={sensitivity ?? DEFAULT_SENSITIVITY}
+          />
+        </div>
+      </Tooltip>
 
       <ToolbarButton
         disabled={sensitivity === undefined || pinned}
@@ -372,6 +371,7 @@ function getStyles(theme: GrafanaTheme2) {
       width: 120px;
       align-items: center;
       border: 1px solid ${theme.colors.secondary.border};
+      cursor: pointer;
       & > div {
         .rc-slider {
           margin: auto 16px;

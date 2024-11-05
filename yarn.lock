@@ -3307,10 +3307,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@bsull/augurs@npm:0.2.0":
+"@bsull/augurs-prophet-wasmstan@npm:0.2.0":
   version: 0.2.0
-  resolution: "@bsull/augurs@npm:0.2.0"
-  checksum: 10/ed0dfd0d9feeeac4b252d0dc25b87471998b8fb6b657aca1d11f771872e26b33b0ba8b61e2f78c5a049a6f6c701f043ace050fcdea866e8299b011826396dc29
+  resolution: "@bsull/augurs-prophet-wasmstan@npm:0.2.0"
+  dependencies:
+    "@bytecodealliance/preview2-shim": "npm:^0.17.0"
+  checksum: 10/bc133a3776ad1c36be39e79e23c63cc43645602df33e030cbfcbf5161a64b110b1c527a9cf5bf4b31d8a878c25a7baddc5f2bedaeb83ecb3a50744ca52c42e11
+  languageName: node
+  linkType: hard
+
+"@bsull/augurs@npm:0.5.4":
+  version: 0.5.4
+  resolution: "@bsull/augurs@npm:0.5.4"
+  checksum: 10/cef0b6aa6ceed3856788f3d8f6b6cbe9e546af9431a0e07f781ede4061d43bdc881e3212b0269078154c50164e018812952fac60c7a9b81023e22beed1ac73f4
+  languageName: node
+  linkType: hard
+
+"@bytecodealliance/preview2-shim@npm:^0.17.0":
+  version: 0.17.0
+  resolution: "@bytecodealliance/preview2-shim@npm:0.17.0"
+  checksum: 10/28a273227d8e8f2b61ad0260be612fd854ace756784c409c6ac4b65bf6b48426e6c058e45c07675303ef844a981fbdda7257df9833ca12bd3e5e4a0480ca5193
   languageName: node
   linkType: hard
 
@@ -4598,7 +4614,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@grafana/scenes-ml@workspace:packages/scenes-ml"
   dependencies:
-    "@bsull/augurs": "npm:0.2.0"
+    "@bsull/augurs": "npm:0.5.4"
+    "@bsull/augurs-prophet-wasmstan": "npm:0.2.0"
     "@emotion/css": "npm:11.10.5"
     "@emotion/react": "npm:11.10.5"
     "@grafana/data": "npm:^10.0.3"
