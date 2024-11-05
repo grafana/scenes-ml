@@ -1,6 +1,7 @@
-import init from '@bsull/augurs';
+import init, { initLogging } from '@bsull/augurs';
 // eslint-disable-next-line no-console
-init().then(() => console.debug('Grafana ML initialized'));
+init().then(() => initLogging({ maxLevel: 'warn' }));
+
 
 export { SceneBaseliner } from './components/SceneBaseliner';
 export { SceneChangepointDetector } from './components/SceneChangepointDetector';
