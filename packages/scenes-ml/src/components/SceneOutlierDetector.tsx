@@ -350,7 +350,7 @@ function SceneOutlierDetectorRenderer({ model }: SceneComponentProps<SceneOutlie
             options={[{ label: 'DBSCAN', value: 'dbscan' }, { label: 'MAD', value: 'mad' }]}
             disabled={sensitivity === undefined}
             value={algorithm ?? 'dbscan'}
-            onChange={v => (v === "dbscan" || v == "mad") && onChangeAlgorithm(v)}
+            onChange={v => (v === "dbscan" || v === "mad") && onChangeAlgorithm(v)}
             size="md"
           />
         </div>

@@ -561,7 +561,7 @@ function SceneBaselinerRenderer({ model }: SceneComponentProps<SceneBaseliner>) 
             options={[{ label: 'Prophet', value: 'prophet' }, { label: 'ETS', value: 'ets' }]}
             disabled={interval === undefined}
             value={modelType ?? 'prophet'}
-            onChange={v => (v === "prophet" || v == "ets") && onChangeModelType(v)}
+            onChange={v => (v === "prophet" || v === "ets") && onChangeModelType(v)}
             size="md"
           />
         </div>
