@@ -1,5 +1,5 @@
 import React from 'react';
-import { LoadedOutlierDetector, OutlierDetector } from "@bsull/augurs";
+import init, { LoadedOutlierDetector, OutlierDetector } from "@bsull/augurs/outlier";
 import { DataFrame, DataQueryRequest, FieldType, GrafanaTheme2, PanelData, colorManipulator, outerJoinDataFrames } from "@grafana/data";
 import { DataTopic, FieldColorModeId } from "@grafana/schema";
 import { ButtonGroup, Checkbox, RadioButtonGroup, Slider, ToolbarButton, Tooltip, useStyles2 } from "@grafana/ui";
@@ -7,6 +7,8 @@ import { ButtonGroup, Checkbox, RadioButtonGroup, Slider, ToolbarButton, Tooltip
 import { SceneComponentProps, SceneObjectState, SceneObjectUrlValues, SceneObjectBase, SceneObjectUrlSyncConfig, ExtraQueryProvider, ExtraQueryDescriptor } from "@grafana/scenes";
 import { css, cx } from '@emotion/css';
 import { of } from 'rxjs';
+
+init().then(() => console.log('augurs outliers initialized'));
 
 // A subset of an outlying series, with a start and end time.
 interface Outlier {

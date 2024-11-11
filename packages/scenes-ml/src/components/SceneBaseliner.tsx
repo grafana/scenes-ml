@@ -1,4 +1,6 @@
-import { MSTL, Prophet, seasonalities } from "@bsull/augurs";
+import initMSTL, { MSTL } from '@bsull/augurs/mstl';
+import initProphet, { Prophet } from '@bsull/augurs/prophet';
+import initSeasonalities, { seasonalities } from '@bsull/augurs/seasons';
 import { optimizer } from "@bsull/augurs-prophet-wasmstan";
 import { css, cx } from "@emotion/css";
 import { DataFrame, DataQueryRequest, dateTime, durationToMilliseconds, Field, FieldType, GrafanaTheme2, PanelData, TimeRange } from "@grafana/data";
@@ -9,6 +11,9 @@ import React from 'react';
 
 import { sceneGraph, SceneComponentProps, SceneObjectState, SceneObjectUrlValues, SceneObjectBase, SceneObjectUrlSyncConfig, ExtraQueryDescriptor, ExtraQueryProvider, ExtraQueryDataProcessor } from "@grafana/scenes";
 import { of } from "rxjs";
+
+Promise.all([initMSTL(), initProphet(), initSeasonalities()])
+  .then(() => console.log('augurs initialized'));
 
 // The type of forecasting model to use.
 //

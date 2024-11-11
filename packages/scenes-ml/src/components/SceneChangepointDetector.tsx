@@ -1,9 +1,11 @@
-import { ChangepointDetector } from "@bsull/augurs";
+import init, { ChangepointDetector } from "@bsull/augurs/changepoint";
 import { DataFrame, DataQueryRequest, dateTime, Field, FieldType } from "@grafana/data";
 import { DataTopic } from "@grafana/schema";
 import { ButtonGroup, Checkbox, ToolbarButton } from "@grafana/ui";
 import React from 'react';
 import { of } from "rxjs";
+
+init().then(() => console.log('augurs changepoints initialized'));
 
 import { SceneComponentProps, SceneObjectState, SceneObjectUrlValues, SceneObjectBase, SceneObjectUrlSyncConfig, ExtraQueryDataProcessor, ExtraQueryProvider, ExtraQueryDescriptor } from "@grafana/scenes";
 

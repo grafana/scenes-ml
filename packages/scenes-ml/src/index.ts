@@ -1,7 +1,6 @@
-import init, { initLogging } from '@bsull/augurs';
-// eslint-disable-next-line no-console
-init().then(() => initLogging({ maxLevel: 'warn' }));
+import init, { initLogging } from '@bsull/augurs/core';
 
+init().then(() => initLogging({ maxLevel: process.env.NODE_ENV === 'development' ? 'trace' : 'warn' }));
 
 export { SceneBaseliner } from './components/SceneBaseliner';
 export { SceneChangepointDetector } from './components/SceneChangepointDetector';
