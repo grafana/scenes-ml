@@ -1,5 +1,5 @@
 import initMSTL, { MSTL } from '@bsull/augurs/mstl';
-import initProphet, { Prophet } from '@bsull/augurs/prophet';
+import initProphet, { initLogging, Prophet } from '@bsull/augurs/prophet';
 import initSeasonalities, { seasonalities } from '@bsull/augurs/seasons';
 import { optimizer } from "@bsull/augurs-prophet-wasmstan";
 import { css, cx } from "@emotion/css";
@@ -12,7 +12,12 @@ import React from 'react';
 import { sceneGraph, SceneComponentProps, SceneObjectState, SceneObjectUrlValues, SceneObjectBase, SceneObjectUrlSyncConfig, ExtraQueryDescriptor, ExtraQueryProvider, ExtraQueryDataProcessor } from "@grafana/scenes";
 import { of } from "rxjs";
 
-Promise.all([initMSTL(), initProphet(), initSeasonalities()])
+Promise.all([
+  initMSTL(),
+  initProphet()
+    .then(() => initLogging({ maxLevel: process.env.NODE_ENV === 'development' ? 'debug' : 'warn' })),
+  initSeasonalities()
+])
   .then(() => console.log('augurs initialized'));
 
 // The type of forecasting model to use.
