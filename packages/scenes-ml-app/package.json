@@ -79,7 +79,6 @@
     "@grafana/scenes-ml": "workspace:*",
     "@grafana/schema": "^10.4.1",
     "@grafana/ui": "^10.4.1",
-    "@types/lodash": "latest",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-router-dom": "^5.2.0",
