@@ -12,7 +12,7 @@ import {
   SceneTimeRange,
   SceneTimeRangeCompare,
 } from '@grafana/scenes';
-import { SceneBaseliner, SceneChangepointDetector, SceneOutlierDetector } from '@grafana/scenes-ml';
+import { SceneBaseliner, SceneChangepointDetector, SceneOutlierDetector, SceneTimeSeriesClusterer } from '@grafana/scenes-ml';
 import { DataQuery } from '@grafana/schema';
 import { DATASOURCE_REF } from '../constants';
 
@@ -67,6 +67,12 @@ const OUTLIER_DATA = [
   ],
 ];
 
+const CLUSTER_DATA = [
+  ...Array.from({ length: 4 }, () => Array.from({ length: 100 }, (_, i) => Math.sin(i) * Math.random() * 10)),
+  ...Array.from({ length: 3 }, () => Array.from({ length: 100 }, (_, i) => Math.cos(i) * Math.random() * 50 + 100)),
+  ...Array.from({ length: 5 }, () => Array.from({ length: 100 }, (_, i) => Math.sin(i) * Math.random() * 20 + 200)),
+];
+
 function getOutlierQueryRunner() {
   return new SceneQueryRunner({
     queries: OUTLIER_DATA.map((values, i) => ({
@@ -83,6 +89,24 @@ function getOutlierQueryRunner() {
     maxDataPointsFromWidth: true,
   });
 }
+
+function getClusterQueryRunner() {
+  return new SceneQueryRunner({
+    queries: CLUSTER_DATA.map((values, i) => ({
+      refId: String.fromCharCode(65 + i),
+      datasource: DATASOURCE_REF,
+      scenarioId: 'predictable_csv_wave',
+      csvWave: [
+        {
+          timeStep: 600,
+          valuesCSV: values.join(','),
+        },
+      ],
+    })),
+    maxDataPointsFromWidth: true,
+  });
+}
+
 
 export function getQueryRunnerWithCSVWaveQuery(
   overrides?: Partial<PredictableCSVWaveQuery>,
@@ -200,6 +224,15 @@ export function getMlDemo(defaults: SceneAppPageState) {
                         interval: 0.95,
                       }),
                     ])
+                    .build(),
+                }),
+                new SceneFlexItem({
+                  minWidth: '100%',
+                  minHeight: 300,
+                  body: PanelBuilders.timeseries()
+                    .setTitle('Clusters of series')
+                    .setData(getClusterQueryRunner())
+                    .setHeaderActions([new SceneTimeSeriesClusterer({})])
                     .build(),
                 }),
               ],
