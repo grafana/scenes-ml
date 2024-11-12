@@ -42,7 +42,7 @@
   "resolutions": {
     "@types/react": "18.2.74"
   },
-  "packageManager": "yarn@4.1.1",
+  "packageManager": "yarn@4.5.1",
   "workspaces": [
     ".",
     "packages/*",
