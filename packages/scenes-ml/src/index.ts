@@ -1,8 +1,3 @@
-import init, { initLogging } from '@bsull/augurs';
-// eslint-disable-next-line no-console
-init().then(() => initLogging({ maxLevel: 'warn' }));
-
-
 export { SceneBaseliner } from './components/SceneBaseliner';
 export { SceneChangepointDetector } from './components/SceneChangepointDetector';
 export { SceneOutlierDetector } from './components/SceneOutlierDetector';

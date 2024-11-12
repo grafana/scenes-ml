@@ -37,7 +37,7 @@
     "url": "https://github.com/grafana/scenes/issues"
   },
   "dependencies": {
-    "@bsull/augurs": "0.5.4",
+    "@bsull/augurs": "0.6.0",
     "@bsull/augurs-prophet-wasmstan": "0.2.0",
     "date-fns": "^3.6.0"
   },
