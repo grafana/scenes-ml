@@ -9,6 +9,21 @@ const config = async (env): Promise<Configuration> => {
       // Required to load WASM modules.
       asyncWebAssembly: true,
     },
+    resolve: {
+      fallback: {
+        fs: false,
+      },
+    },
+    module: {
+      rules: [
+        {
+          test: /\@bsull\/augurs\/.*\.js$/,
+          resolve: {
+            fullySpecified: false
+          }
+        },
+      ]
+    },
   });
 };
 
