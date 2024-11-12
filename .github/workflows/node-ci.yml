@@ -14,13 +14,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Enable Corepack
+        run: corepack enable
+
       - name: Test using Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: yarn
 
       - name: Install dependencies
-        uses: ./.github/actions/yarn-nm-install
+        run: yarn install --immutable --inline-builds
 
       - name: Test library
         run: yarn test --scope '@grafana/scenes-ml'
@@ -51,13 +55,17 @@ jobs:
       - name: Prepare repository
         run: git fetch --unshallow --tags
 
+      - name: Enable Corepack
+        run: corepack enable
+
       - name: Test using Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: yarn
 
       - name: Install dependencies
-        uses: ./.github/actions/yarn-nm-install
+        run: yarn install --immutable --inline-builds
 
       - name: Build library
         run: yarn run lerna run build --no-private
