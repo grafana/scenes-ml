@@ -3,7 +3,7 @@
   "license": "Apache-2.0",
   "private": true,
   "name": "grafana-scenes-ml",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Grafana framework for building dynamic dashboards",
   "keywords": [
     "typescript"
