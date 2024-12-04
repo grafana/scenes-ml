@@ -4,7 +4,7 @@ import { DataFrame, DataQueryRequest, FieldType, GrafanaTheme2, PanelData, color
 import { DataTopic, FieldColorModeId } from "@grafana/schema";
 import { ButtonGroup, Checkbox, RadioButtonGroup, Slider, ToolbarButton, Tooltip, useStyles2 } from "@grafana/ui";
 
-import { SceneComponentProps, SceneObjectState, SceneObjectUrlValues, SceneObjectBase, SceneObjectUrlSyncConfig, ExtraQueryProvider, ExtraQueryDescriptor } from "@grafana/scenes";
+import { SceneComponentProps, SceneObjectState, SceneObjectBase, ExtraQueryProvider, ExtraQueryDescriptor } from "@grafana/scenes";
 import { css, cx } from '@emotion/css';
 import { of } from 'rxjs';
 
@@ -49,7 +49,6 @@ export class SceneOutlierDetector extends SceneObjectBase<SceneOutlierDetectorSt
   implements ExtraQueryProvider<SceneOutlierDetectorState> {
 
   public static Component = SceneOutlierDetectorRenderer;
-  protected _urlSync = new SceneObjectUrlSyncConfig(this, { keys: ['outlierSensitivity', 'outlierAddAnnotations'] });
   private latestData: PanelData | undefined;
 
   // The most recent detector instance.
@@ -125,42 +124,6 @@ export class SceneOutlierDetector extends SceneObjectBase<SceneOutlierDetectorSt
       return false;
     }
     return prev.sensitivity !== next.sensitivity || prev.addAnnotations !== next.addAnnotations || prev.pinned !== next.pinned || prev.algorithm !== next.algorithm;
-  }
-
-  // Get the URL state for the component.
-  public getUrlState(): SceneObjectUrlValues {
-    return {
-      outlierSensitivity: this.state.sensitivity?.toString(),
-      outlierAddAnnotations: this.state.addAnnotations?.toString(),
-    };
-  }
-
-  public updateFromUrl(values: SceneObjectUrlValues) {
-    if (!values.outlierSensitivity && !values.outlierAddAnnotations) {
-      return;
-    }
-    let sensitivity: number | undefined;
-    if (typeof values.outlierSensitivity === 'string') {
-      sensitivity = parseFloat(values.outlierSensitivity);
-    }
-
-    let addAnnotations: boolean | undefined;
-    if (typeof values.outlierAddAnnotations === 'string') {
-      addAnnotations = values.outlierAddAnnotations === 'true';
-    }
-
-    const stateUpdate: Partial<SceneOutlierDetectorState> = {};
-    if (sensitivity) {
-      stateUpdate.sensitivity = sensitivity;
-    } else {
-      stateUpdate.sensitivity = DEFAULT_SENSITIVITY;
-    }
-    if (addAnnotations) {
-      stateUpdate.addAnnotations = addAnnotations;
-    } else {
-      stateUpdate.addAnnotations = true;
-    }
-    this.setState(stateUpdate);
   }
 }
 
