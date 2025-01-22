@@ -5,7 +5,7 @@ import { DataFrame, DataQueryRequest, FieldType, GrafanaTheme2, PanelData, outer
 import { FieldColorModeId } from "@grafana/schema";
 import { ButtonGroup, Checkbox, Slider, ToolbarButton, Tooltip, useStyles2 } from "@grafana/ui";
 
-import { SceneComponentProps, SceneObjectState, SceneObjectUrlValues, SceneObjectBase, SceneObjectUrlSyncConfig, ExtraQueryProvider, ExtraQueryDescriptor } from "@grafana/scenes";
+import { SceneComponentProps, SceneObjectState, SceneObjectBase, ExtraQueryProvider, ExtraQueryDescriptor } from "@grafana/scenes";
 import { css, cx } from '@emotion/css';
 import { of } from 'rxjs';
 
@@ -23,7 +23,6 @@ export class SceneTimeSeriesClusterer extends SceneObjectBase<SceneTimeSeriesClu
   implements ExtraQueryProvider<SceneTimeSeriesClustererState> {
 
   public static Component = SceneTimeSeriesClustererRenderer;
-  protected _urlSync = new SceneObjectUrlSyncConfig(this, { keys: ['clusterepsilon'] });
   private latestData: PanelData | undefined;
   private clusters: Record<number, Cluster> | undefined;
 
@@ -83,31 +82,6 @@ export class SceneTimeSeriesClusterer extends SceneObjectBase<SceneTimeSeriesClu
       return false;
     }
     return prev.epsilon !== next.epsilon || prev.pinned !== next.pinned;
-  }
-
-  // Get the URL state for the component.
-  public getUrlState(): SceneObjectUrlValues {
-    return {
-      clusterepsilon: this.state.epsilon?.toString(),
-    };
-  }
-
-  public updateFromUrl(values: SceneObjectUrlValues) {
-    if (!values.clusterepsilon) {
-      return;
-    }
-    let epsilon: number | undefined;
-    if (typeof values.clusterepsilon === 'string') {
-      epsilon = parseFloat(values.clusterepsilon);
-    }
-
-    const stateUpdate: Partial<SceneTimeSeriesClustererState> = {};
-    if (epsilon) {
-      stateUpdate.epsilon = epsilon;
-    } else {
-      stateUpdate.epsilon = DEFAULT_EPSILON;
-    }
-    this.setState(stateUpdate);
   }
 }
 
