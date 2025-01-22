@@ -4899,11 +4899,11 @@ __metadata:
     tslib: "npm:2.8.1"
     typescript: "npm:5.6.3"
   peerDependencies:
-    "@grafana/data": ^10.0.3
-    "@grafana/runtime": ^10.0.3
+    "@grafana/data": ">=10.4"
+    "@grafana/runtime": ">=10.4"
     "@grafana/scenes": ">=4.26.1"
-    "@grafana/schema": ^10.0.3
-    "@grafana/ui": ^10.0.3
+    "@grafana/schema": ">=10.4"
+    "@grafana/ui": ">=10.4"
     react: ^18.0.0
     react-dom: ^18.0.0
   languageName: unknown
