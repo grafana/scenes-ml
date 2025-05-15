@@ -31,5 +31,8 @@ See that library for more information on the underlying algorithms.
    This is important to make sure your plugin's Webpack configuration knows how to load the package.
 1. Import components from `@grafana/scenes-ml` and use as normal!
 
+See the [Getting Started guide][getting-started] for more usage documentation.
+
 [augurs]: https://github.com/grafana/augurs
+[getting-started]: https://grafana.com/developers/scenes/scenes-ml/getting-started
 [update-create-plugin-version]: https://grafana.com/developers/plugin-tools/migration-guides/update-create-plugin-versions
