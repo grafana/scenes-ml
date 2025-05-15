@@ -7,7 +7,7 @@ import { of } from "rxjs";
 
 init().then(() => console.log('augurs changepoints initialized'));
 
-import { SceneComponentProps, SceneObjectState, SceneObjectUrlValues, SceneObjectBase, SceneObjectUrlSyncConfig, ExtraQueryDataProcessor, ExtraQueryProvider, ExtraQueryDescriptor } from "@grafana/scenes";
+import { SceneComponentProps, SceneObjectState, SceneObjectBase, ExtraQueryDataProcessor, ExtraQueryProvider, ExtraQueryDescriptor } from "@grafana/scenes";
 
 export interface Changepoint {
   idx: number
@@ -43,8 +43,6 @@ export class SceneChangepointDetector extends SceneObjectBase<SceneChangepointDe
   implements ExtraQueryProvider<SceneChangepointDetectorState> {
 
   public static Component = SceneChangepointDetectorRenderer;
-  protected _urlSync = new SceneObjectUrlSyncConfig(this, { keys: ['changepointLookbackFactor', 'changepointEnabled'] });
-
   public constructor(state: Partial<SceneChangepointDetectorState>) {
     super({ lookbackFactorOptions: DEFAULT_LOOKBACK_FACTOR_OPTIONS, ...state });
   }
@@ -80,14 +78,6 @@ export class SceneChangepointDetector extends SceneObjectBase<SceneChangepointDe
     return prev.enabled !== next.enabled;
   }
 
-  // Get the URL state for the component.
-  public getUrlState(): SceneObjectUrlValues {
-    return {
-      changepointLookbackFactor: this.state.lookbackFactor?.toString(),
-      changepointEnabled: this.state.enabled?.toString(),
-    };
-  }
-
   public onEnabledChanged(enabled: boolean) {
     this.setState({ enabled });
   }
@@ -98,38 +88,6 @@ export class SceneChangepointDetector extends SceneObjectBase<SceneChangepointDe
 
   public onClearFactor() {
     this.setState({ lookbackFactor: undefined });
-  }
-
-  // Update the component state from the URL.
-  public updateFromUrl(values: SceneObjectUrlValues) {
-    if (!values.changepointLookbackFactor && !values.changepointEnabled) {
-      return;
-    }
-    let factor: number | undefined;
-    if (typeof values.changepointLookbackFactor === 'string') {
-      factor = parseInt(values.changepointLookbackFactor, 10);
-    } else if (values.changepointLookbackFactor instanceof Array) {
-      factor = parseInt(values.changepointLookbackFactor[0], 10);
-    }
-    let enabled: boolean | undefined;
-    if (typeof values.changepointEnabled === 'string') {
-      enabled = values.changepointEnabled === 'true';
-    } else if (typeof values.changepointEnabled === 'number') {
-      enabled = values.changepointEnabled === 1;
-    }
-    const stateUpdate: Partial<SceneChangepointDetectorState> = {};
-    if (factor) {
-      const options = DEFAULT_LOOKBACK_FACTOR_OPTIONS;
-      if (options.find(({ value }) => value === factor)) {
-        stateUpdate.lookbackFactor = factor;
-      } else {
-        stateUpdate.lookbackFactor = DEFAULT_LOOKBACK_FACTOR_OPTION.value;
-      }
-    }
-    if (enabled) {
-      stateUpdate.enabled = enabled;
-    }
-    this.setState(stateUpdate);
   }
 }
 
