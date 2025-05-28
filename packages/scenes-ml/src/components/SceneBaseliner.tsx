@@ -9,7 +9,7 @@ import { ButtonGroup, Checkbox, RadioButtonGroup, Slider, ToolbarButton, Tooltip
 import { Duration } from 'date-fns';
 import React from 'react';
 
-import { sceneGraph, SceneComponentProps, SceneObjectState, SceneObjectUrlValues, SceneObjectBase, SceneObjectUrlSyncConfig, ExtraQueryDescriptor, ExtraQueryProvider, ExtraQueryDataProcessor } from "@grafana/scenes";
+import { sceneGraph, SceneComponentProps, SceneObjectState, SceneObjectBase, ExtraQueryDescriptor, ExtraQueryProvider, ExtraQueryDataProcessor } from "@grafana/scenes";
 import { of } from "rxjs";
 
 Promise.all([
@@ -95,7 +95,6 @@ export class SceneBaseliner extends SceneObjectBase<SceneBaselinerState>
   implements ExtraQueryProvider<SceneBaselinerState> {
 
   public static Component = SceneBaselinerRenderer;
-  protected _urlSync = new SceneObjectUrlSyncConfig(this, { keys: ['discoverSeasonalities', 'interval', 'trainingLookbackFactor'] });
   public latestData?: PanelData;
 
   public constructor(state: Partial<SceneBaselinerState>) {
@@ -143,15 +142,6 @@ export class SceneBaseliner extends SceneObjectBase<SceneBaselinerState>
     return false;
   }
 
-  // Get the URL state for the component.
-  public getUrlState(): SceneObjectUrlValues {
-    return {
-      interval: this.state.interval?.toString(),
-      discoverSeasonalities: this.state.discoverSeasonalities?.toString(),
-      trainingLookbackFactor: this.state.trainingLookbackFactor?.toString(),
-    };
-  }
-
   public onModelTypeChanged(modelType: ModelType) {
     this.setState({ model: modelType });
   }
@@ -178,51 +168,6 @@ export class SceneBaseliner extends SceneObjectBase<SceneBaselinerState>
 
   public setLatestData(data: PanelData) {
     this.latestData = data;
-  }
-
-  // Update the component state from the URL.
-  public updateFromUrl(values: SceneObjectUrlValues) {
-    if (!values.trainingLookbackFactor && !values.interval) {
-      return;
-    }
-    let factor: number | undefined;
-    if (typeof values.trainingLookbackFactor === 'string') {
-      factor = parseInt(values.trainingLookbackFactor, 10);
-    } else if (values.trainingLookbackFactor instanceof Array) {
-      factor = parseInt(values.trainingLookbackFactor[0], 10);
-    }
-    let interval: number | undefined;
-    if (typeof values.interval === 'string') {
-      interval = parseInt(values.interval, 10);
-    } else if (values.interval instanceof Array) {
-      interval = parseInt(values.interval[0], 10);
-    }
-    let discoverSeasonalities: boolean | undefined;
-    if (typeof values.discoverSeasonalities === 'string') {
-      discoverSeasonalities = values.discoverSeasonalities === 'true';
-    } else if (values.discoverSeasonalities instanceof Array) {
-      discoverSeasonalities = values.discoverSeasonalities[0] === 'true';
-    }
-    const stateUpdate: Partial<SceneBaselinerState> = {};
-    if (factor) {
-      const options = DEFAULT_TRAINING_FACTOR_OPTIONS;
-      if (options.find(({ value }) => value === factor)) {
-        stateUpdate.trainingLookbackFactor = factor;
-      } else {
-        stateUpdate.trainingLookbackFactor = DEFAULT_TRAINING_FACTOR_OPTION.value;
-      }
-    }
-    if (interval) {
-      stateUpdate.interval = interval;
-    } else {
-      stateUpdate.interval = DEFAULT_INTERVAL;
-    }
-    if (discoverSeasonalities) {
-      stateUpdate.discoverSeasonalities = discoverSeasonalities;
-    } else {
-      stateUpdate.discoverSeasonalities = false;
-    }
-    this.setState(stateUpdate);
   }
 }
 
