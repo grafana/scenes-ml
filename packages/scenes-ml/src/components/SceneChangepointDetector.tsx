@@ -1,16 +1,25 @@
-import init, { ChangepointDetector } from "@bsull/augurs/changepoint";
-import { DataFrame, DataQueryRequest, dateTime, Field, FieldType } from "@grafana/data";
-import { DataTopic } from "@grafana/schema";
-import { ButtonGroup, Checkbox, ToolbarButton } from "@grafana/ui";
+import init, { ChangepointDetector } from '@bsull/augurs/changepoint';
+import { DataFrame, DataQueryRequest, dateTime, Field, FieldType } from '@grafana/data';
+import { DataTopic } from '@grafana/schema';
+import { ButtonGroup, Checkbox, ToolbarButton } from '@grafana/ui';
 import React from 'react';
-import { of } from "rxjs";
+import { of } from 'rxjs';
 
 init().then(() => console.log('augurs changepoints initialized'));
 
-import { SceneComponentProps, SceneObjectState, SceneObjectUrlValues, SceneObjectBase, SceneObjectUrlSyncConfig, ExtraQueryDataProcessor, ExtraQueryProvider, ExtraQueryDescriptor } from "@grafana/scenes";
+import {
+  SceneComponentProps,
+  SceneObjectState,
+  SceneObjectUrlValues,
+  SceneObjectBase,
+  SceneObjectUrlSyncConfig,
+  ExtraQueryDataProcessor,
+  ExtraQueryProvider,
+  ExtraQueryDescriptor,
+} from '@grafana/scenes';
 
 export interface Changepoint {
-  idx: number
+  idx: number;
   time: number;
   field: Field<number>;
 }
@@ -39,11 +48,14 @@ export const DEFAULT_LOOKBACK_FACTOR_OPTION = {
   value: 4,
 };
 
-export class SceneChangepointDetector extends SceneObjectBase<SceneChangepointDetectorState>
-  implements ExtraQueryProvider<SceneChangepointDetectorState> {
-
+export class SceneChangepointDetector
+  extends SceneObjectBase<SceneChangepointDetectorState>
+  implements ExtraQueryProvider<SceneChangepointDetectorState>
+{
   public static Component = SceneChangepointDetectorRenderer;
-  protected _urlSync = new SceneObjectUrlSyncConfig(this, { keys: ['changepointLookbackFactor', 'changepointEnabled'] });
+  protected _urlSync = new SceneObjectUrlSyncConfig(this, {
+    keys: ['changepointLookbackFactor', 'changepointEnabled'],
+  });
 
   public constructor(state: Partial<SceneChangepointDetectorState>) {
     super({ lookbackFactorOptions: DEFAULT_LOOKBACK_FACTOR_OPTIONS, ...state });
@@ -137,20 +149,23 @@ export class SceneChangepointDetector extends SceneObjectBase<SceneChangepointDe
 //
 // This function will take the secondary frame returned by the query runner and
 // produce a new frame with the changepoint annotations.
-const changepointProcessor: (detector: SceneChangepointDetector) => ExtraQueryDataProcessor = (detector) => (_, secondary) => {
-  const annotations = secondary.series.map((series) => createChangepointAnnotations(series, detector.state.onChangepointDetected));
-  return of({ timeRange: secondary.timeRange, series: [], state: secondary.state, annotations });
-}
+const changepointProcessor: (detector: SceneChangepointDetector) => ExtraQueryDataProcessor =
+  (detector) => (_, secondary) => {
+    const annotations = secondary.series.map((series) =>
+      createChangepointAnnotations(series, detector.state.onChangepointDetected)
+    );
+    return of({ timeRange: secondary.timeRange, series: [], state: secondary.state, annotations });
+  };
 
 function createChangepointAnnotations(
   frame: DataFrame,
-  onChangepointDetected: ((changepoint: Changepoint) => void) | undefined,
+  onChangepointDetected: ((changepoint: Changepoint) => void) | undefined
 ): DataFrame {
   const annotationTimes = [];
   const annotationTexts = [];
   const timeField = frame.fields.find((field) => field.type === FieldType.time);
   if (!timeField) {
-    return { fields: [], length: 0 }
+    return { fields: [], length: 0 };
   }
   for (const field of frame.fields) {
     if (field.type !== FieldType.number) {
@@ -180,12 +195,12 @@ function createChangepointAnnotations(
         type: FieldType.string,
         values: annotationTexts,
         config: {},
-      }
+      },
     ],
     length: annotationTimes.length,
     meta: {
       dataTopic: DataTopic.Annotations,
-    }
+    },
   };
 }
 

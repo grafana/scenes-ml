@@ -1,4 +1,11 @@
-import { DataFrame, DataQueryRequest, DataQueryResponse, FieldType, LoadingState, TestDataSourceResponse } from '@grafana/data';
+import {
+  DataFrame,
+  DataQueryRequest,
+  DataQueryResponse,
+  FieldType,
+  LoadingState,
+  TestDataSourceResponse,
+} from '@grafana/data';
 import { RuntimeDataSource } from '@grafana/scenes';
 import { DataQuery } from '@grafana/schema';
 import { Observable } from 'rxjs';
@@ -7,7 +14,7 @@ const forecastWave = [0, 0, 0.5, 1, 2, 2, 1, 1, 0.5, 0.3];
 
 type DemoDataQuery = DataQuery & {
   type: 'forecast';
-}
+};
 
 function forecastData({ range, intervalMs }: DataQueryRequest<DemoDataQuery>): DataFrame {
   const { from, to } = range;
@@ -34,9 +41,7 @@ export class MLDemoDS extends RuntimeDataSource {
   public query(request: DataQueryRequest<DemoDataQuery>): Promise<DataQueryResponse> | Observable<DataQueryResponse> {
     return Promise.resolve({
       state: LoadingState.Done,
-      data: request.targets
-        .map((target) => targetData(target, request))
-        .filter((data) => data !== undefined)
+      data: request.targets.map((target) => targetData(target, request)).filter((data) => data !== undefined),
     });
   }
 
