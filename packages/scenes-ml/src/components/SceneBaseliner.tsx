@@ -1,24 +1,42 @@
 import initMSTL, { MSTL } from '@bsull/augurs/mstl';
 import initProphet, { initLogging, Prophet } from '@bsull/augurs/prophet';
 import initSeasonalities, { seasonalities } from '@bsull/augurs/seasons';
-import { optimizer } from "@bsull/augurs-prophet-wasmstan";
-import { css, cx } from "@emotion/css";
-import { DataFrame, DataQueryRequest, dateTime, durationToMilliseconds, Field, FieldType, GrafanaTheme2, PanelData, TimeRange } from "@grafana/data";
-import { FieldColorModeId } from "@grafana/schema";
-import { ButtonGroup, Checkbox, RadioButtonGroup, Slider, ToolbarButton, Tooltip, useStyles2 } from "@grafana/ui";
+import { optimizer } from '@bsull/augurs-prophet-wasmstan';
+import { css, cx } from '@emotion/css';
+import {
+  DataFrame,
+  DataQueryRequest,
+  dateTime,
+  durationToMilliseconds,
+  Field,
+  FieldType,
+  GrafanaTheme2,
+  PanelData,
+  TimeRange,
+} from '@grafana/data';
+import { FieldColorModeId } from '@grafana/schema';
+import { ButtonGroup, Checkbox, RadioButtonGroup, Slider, ToolbarButton, Tooltip, useStyles2 } from '@grafana/ui';
 import { Duration } from 'date-fns';
 import React from 'react';
 
-import { sceneGraph, SceneComponentProps, SceneObjectState, SceneObjectUrlValues, SceneObjectBase, SceneObjectUrlSyncConfig, ExtraQueryDescriptor, ExtraQueryProvider, ExtraQueryDataProcessor } from "@grafana/scenes";
-import { of } from "rxjs";
+import {
+  sceneGraph,
+  SceneComponentProps,
+  SceneObjectState,
+  SceneObjectUrlValues,
+  SceneObjectBase,
+  SceneObjectUrlSyncConfig,
+  ExtraQueryDescriptor,
+  ExtraQueryProvider,
+  ExtraQueryDataProcessor,
+} from '@grafana/scenes';
+import { of } from 'rxjs';
 
 Promise.all([
   initMSTL(),
-  initProphet()
-    .then(() => initLogging({ maxLevel: process.env.NODE_ENV === 'development' ? 'debug' : 'warn' })),
-  initSeasonalities()
-])
-  .then(() => console.log('augurs initialized'));
+  initProphet().then(() => initLogging({ maxLevel: process.env.NODE_ENV === 'development' ? 'debug' : 'warn' })),
+  initSeasonalities(),
+]).then(() => console.log('augurs initialized'));
 
 // The type of forecasting model to use.
 //
@@ -73,7 +91,7 @@ interface SceneBaselinerState extends SceneObjectState {
   onAnomalyDetected?: (anomaly: Anomaly) => void;
 
   // The model to use.
-  model?: ModelType,
+  model?: ModelType;
 }
 
 // Default to a 95% prediction interval.
@@ -91,11 +109,14 @@ export const DEFAULT_TRAINING_FACTOR_OPTION = {
   value: 4,
 };
 
-export class SceneBaseliner extends SceneObjectBase<SceneBaselinerState>
-  implements ExtraQueryProvider<SceneBaselinerState> {
-
+export class SceneBaseliner
+  extends SceneObjectBase<SceneBaselinerState>
+  implements ExtraQueryProvider<SceneBaselinerState>
+{
   public static Component = SceneBaselinerRenderer;
-  protected _urlSync = new SceneObjectUrlSyncConfig(this, { keys: ['discoverSeasonalities', 'interval', 'trainingLookbackFactor'] });
+  protected _urlSync = new SceneObjectUrlSyncConfig(this, {
+    keys: ['discoverSeasonalities', 'interval', 'trainingLookbackFactor'],
+  });
   public latestData?: PanelData;
 
   public constructor(state: Partial<SceneBaselinerState>) {
@@ -108,7 +129,9 @@ export class SceneBaseliner extends SceneObjectBase<SceneBaselinerState>
     if (this.state.interval) {
       const { to, from: origFrom } = request.range;
       const diffMs = to.diff(origFrom);
-      const from = dateTime(to).subtract(this.state.trainingLookbackFactor ?? DEFAULT_TRAINING_FACTOR_OPTION.value * diffMs);
+      const from = dateTime(to).subtract(
+        this.state.trainingLookbackFactor ?? DEFAULT_TRAINING_FACTOR_OPTION.value * diffMs
+      );
       extraQueries.push({
         req: {
           ...request,
@@ -118,7 +141,7 @@ export class SceneBaseliner extends SceneObjectBase<SceneBaselinerState>
             raw: {
               from,
               to,
-            }
+            },
           },
         },
         processor: baselineProcessor(this),
@@ -137,7 +160,12 @@ export class SceneBaseliner extends SceneObjectBase<SceneBaselinerState>
     if (wasEnabled !== nowEnabled || prev.trainingLookbackFactor !== next.trainingLookbackFactor) {
       return true;
     }
-    if (prev.interval !== next.interval || prev.discoverSeasonalities !== next.discoverSeasonalities || prev.pinned !== next.pinned || prev.model !== next.model) {
+    if (
+      prev.interval !== next.interval ||
+      prev.discoverSeasonalities !== next.discoverSeasonalities ||
+      prev.pinned !== next.pinned ||
+      prev.model !== next.model
+    ) {
       return true;
     }
     return false;
@@ -239,39 +267,41 @@ const baselineProcessor: (baseliner: SceneBaseliner) => ExtraQueryDataProcessor 
   }
   const { interval, discoverSeasonalities, onAnomalyDetected } = baseliner.state;
   const timeRange = sceneGraph.getTimeRange(baseliner);
-  const baselines = secondary.series.map((series) => {
-    let baselineFrame: DataFrame | undefined;
-    try {
-      baselineFrame = createBaselinesForFrame(
-        baseliner.state.model ?? 'prophet',
-        series,
-        interval,
-        undefined,
-        discoverSeasonalities,
-        timeRange.state.value,
-        onAnomalyDetected,
-      );
-    } catch (e) {
-      console.error(e);
-      return;
-    }
-    return {
-      ...series,
-      meta: {
-        ...series.meta,
-        baseline: {
-          isBaselineTrainingQuery: true,
-          origRefId: series.refId,
+  const baselines = secondary.series
+    .map((series) => {
+      let baselineFrame: DataFrame | undefined;
+      try {
+        baselineFrame = createBaselinesForFrame(
+          baseliner.state.model ?? 'prophet',
+          series,
+          interval,
+          undefined,
+          discoverSeasonalities,
+          timeRange.state.value,
+          onAnomalyDetected
+        );
+      } catch (e) {
+        console.error(e);
+        return;
+      }
+      return {
+        ...series,
+        meta: {
+          ...series.meta,
+          baseline: {
+            isBaselineTrainingQuery: true,
+            origRefId: series.refId,
+          },
         },
-      },
-      refId: `${series.refId}-baseline-training`,
-      fields: baselineFrame.fields,
-    };
-  }).filter((frame) => frame !== undefined) as DataFrame[];
+        refId: `${series.refId}-baseline-training`,
+        fields: baselineFrame.fields,
+      };
+    })
+    .filter((frame) => frame !== undefined) as DataFrame[];
   const data = { ...secondary, series: baselines };
   baseliner.setLatestData(data);
   return of(data);
-}
+};
 
 // Seasonalities added by default.
 const defaultSeasonalities = {
@@ -354,7 +384,7 @@ function createBaselinesForFrame(
   extraSeasonalities?: Duration[],
   discoverSeasonalities = false,
   timeRange?: TimeRange,
-  onAnomalyDetected?: (anomaly: Anomaly) => void,
+  onAnomalyDetected?: (anomaly: Anomaly) => void
 ): DataFrame {
   const canAdd = canAddBaseline(frame);
   if (!canAdd) {
@@ -426,9 +456,7 @@ function createBaselinesForFrame(
 
     // Add out-of-sample predictions.
     if (outOfSampleSteps > 0) {
-      const outOfSample = predictOutOfSample(
-        model, outOfSampleSteps, interval, times[0], freq
-      )
+      const outOfSample = predictOutOfSample(model, outOfSampleSteps, interval, times[0], freq);
       // const outOfSample = model.predict(outOfSampleSteps, interval);
       // Recreate the times array since we're going to have data for the
       // full time range now.
@@ -462,7 +490,14 @@ function createBaselinesForFrame(
 // Create new fields from baseline values.
 // The fields will have names derived from the original field, and
 // configurations to ensure they are displayed correctly in the graph.
-function createFields(name: string, timeField: Field, times: number[], point: number[], lower?: number[], upper?: number[]) {
+function createFields(
+  name: string,
+  timeField: Field,
+  times: number[],
+  point: number[],
+  lower?: number[],
+  upper?: number[]
+) {
   // Always add the point estimates, but only add the intervals if they exist.
   const fields: Field[] = [
     // Recreate the time field with the new times.
@@ -501,7 +536,7 @@ function createFields(name: string, timeField: Field, times: number[], point: nu
             tooltip: false,
             legend: true,
           },
-        }
+        },
       },
     });
     fields.push({
@@ -522,7 +557,7 @@ function createFields(name: string, timeField: Field, times: number[], point: nu
             tooltip: false,
             legend: true,
           },
-        }
+        },
       },
     });
   }
@@ -542,11 +577,11 @@ function SceneBaselinerRenderer({ model }: SceneComponentProps<SceneBaseliner>) 
 
   const onChangeInterval = (i: number | undefined) => {
     model.onIntervalChanged(i);
-  }
+  };
 
   const onChangeModelType = (v: 'prophet' | 'ets') => {
     model.onModelTypeChanged(v);
-  }
+  };
 
   const sliderStyles = interval === undefined || pinned ? cx(styles.slider, styles.disabled) : styles.slider;
 
@@ -568,10 +603,13 @@ function SceneBaselinerRenderer({ model }: SceneComponentProps<SceneBaseliner>) 
       <Tooltip content="The model to use for baseline detection.">
         <div>
           <RadioButtonGroup
-            options={[{ label: 'Prophet', value: 'prophet' }, { label: 'ETS', value: 'ets' }]}
+            options={[
+              { label: 'Prophet', value: 'prophet' },
+              { label: 'ETS', value: 'ets' },
+            ]}
             disabled={interval === undefined}
             value={modelType ?? 'prophet'}
-            onChange={v => (v === "prophet" || v === "ets") && onChangeModelType(v)}
+            onChange={(v) => (v === 'prophet' || v === 'ets') && onChangeModelType(v)}
             size="md"
           />
         </div>
@@ -579,13 +617,7 @@ function SceneBaselinerRenderer({ model }: SceneComponentProps<SceneBaseliner>) 
 
       <Tooltip content="The prediction interval to use.">
         <div className={sliderStyles}>
-          <Slider
-            onAfterChange={onChangeInterval}
-            min={0.01}
-            max={0.99}
-            step={0.01}
-            value={interval ?? 0.95}
-          />
+          <Slider onAfterChange={onChangeInterval} min={0.01} max={0.99} step={0.01} value={interval ?? 0.95} />
         </div>
       </Tooltip>
 
@@ -649,23 +681,23 @@ function getStyles(theme: GrafanaTheme2) {
       padding-left: calc(1px / 8);
       padding-right: 1px;
     `,
-  }
-};
+  };
+}
 
 // TODO: handle this better.
 
 interface ModelBase {
-  type: ModelType
-  model: Prophet | MSTL,
+  type: ModelType;
+  model: Prophet | MSTL;
 }
 
 interface ProphetModel extends ModelBase {
-  type: 'prophet',
-  model: Prophet,
+  type: 'prophet';
+  model: Prophet;
 }
 interface ETSModel extends ModelBase {
-  type: 'ets',
-  model: MSTL,
+  type: 'ets';
+  model: MSTL;
 }
 
 type Model = ProphetModel | ETSModel;
@@ -684,7 +716,7 @@ function fitModel(type: ModelType, ds: number[], y: number[], seasonLengths: Uin
 }
 
 function predictInSample({ model, type }: Model, level?: number) {
-  if (type === "ets") {
+  if (type === 'ets') {
     const inSample = model.predictInSample(level);
     const values = Array.from(inSample.point);
     const lower = inSample.intervals ? Array.from(inSample.intervals.lower) : undefined;
@@ -695,12 +727,12 @@ function predictInSample({ model, type }: Model, level?: number) {
     const values = Array.from(inSample.yhat.point);
     const lower = inSample.yhat.intervals ? Array.from(inSample.yhat.intervals.lower) : undefined;
     const upper = inSample.yhat.intervals ? Array.from(inSample.yhat.intervals.upper) : undefined;
-    return { values, lower, upper }
+    return { values, lower, upper };
   }
 }
 
 function predictOutOfSample({ model, type }: Model, steps: number, level?: number, last?: number, interval?: number) {
-  if (type === "ets") {
+  if (type === 'ets') {
     const preds = model.predict(steps, level);
     const values = Array.from(preds.point);
     const lower = preds.intervals ? Array.from(preds.intervals.lower) : undefined;
@@ -712,6 +744,6 @@ function predictOutOfSample({ model, type }: Model, steps: number, level?: numbe
     const values = Array.from(preds.yhat.point);
     const lower = preds.yhat.intervals ? Array.from(preds.yhat.intervals.lower) : undefined;
     const upper = preds.yhat.intervals ? Array.from(preds.yhat.intervals.upper) : undefined;
-    return { values, lower, upper }
+    return { values, lower, upper };
   }
 }

@@ -1,10 +1,26 @@
 import React from 'react';
-import init, { LoadedOutlierDetector, OutlierDetector } from "@bsull/augurs/outlier";
-import { DataFrame, DataQueryRequest, FieldType, GrafanaTheme2, PanelData, colorManipulator, outerJoinDataFrames } from "@grafana/data";
-import { DataTopic, FieldColorModeId } from "@grafana/schema";
-import { ButtonGroup, Checkbox, RadioButtonGroup, Slider, ToolbarButton, Tooltip, useStyles2 } from "@grafana/ui";
+import init, { LoadedOutlierDetector, OutlierDetector } from '@bsull/augurs/outlier';
+import {
+  DataFrame,
+  DataQueryRequest,
+  FieldType,
+  GrafanaTheme2,
+  PanelData,
+  colorManipulator,
+  outerJoinDataFrames,
+} from '@grafana/data';
+import { DataTopic, FieldColorModeId } from '@grafana/schema';
+import { ButtonGroup, Checkbox, RadioButtonGroup, Slider, ToolbarButton, Tooltip, useStyles2 } from '@grafana/ui';
 
-import { SceneComponentProps, SceneObjectState, SceneObjectUrlValues, SceneObjectBase, SceneObjectUrlSyncConfig, ExtraQueryProvider, ExtraQueryDescriptor } from "@grafana/scenes";
+import {
+  SceneComponentProps,
+  SceneObjectState,
+  SceneObjectUrlValues,
+  SceneObjectBase,
+  SceneObjectUrlSyncConfig,
+  ExtraQueryProvider,
+  ExtraQueryDescriptor,
+} from '@grafana/scenes';
 import { css, cx } from '@emotion/css';
 import { of } from 'rxjs';
 
@@ -45,9 +61,10 @@ interface SceneOutlierDetectorState extends SceneObjectState {
 
 const DEFAULT_SENSITIVITY = 0.5;
 
-export class SceneOutlierDetector extends SceneObjectBase<SceneOutlierDetectorState>
-  implements ExtraQueryProvider<SceneOutlierDetectorState> {
-
+export class SceneOutlierDetector
+  extends SceneObjectBase<SceneOutlierDetectorState>
+  implements ExtraQueryProvider<SceneOutlierDetectorState>
+{
   public static Component = SceneOutlierDetectorRenderer;
   protected _urlSync = new SceneObjectUrlSyncConfig(this, { keys: ['outlierSensitivity', 'outlierAddAnnotations'] });
   private latestData: PanelData | undefined;
@@ -84,47 +101,60 @@ export class SceneOutlierDetector extends SceneObjectBase<SceneOutlierDetectorSt
 
   public getExtraQueries(primary: DataQueryRequest): ExtraQueryDescriptor[] {
     const { sensitivity, algorithm } = this.state;
-    return sensitivity === undefined ? [] : [
-      {
-        req: {
-          ...primary,
-          targets: [],
-        },
-        processor: (data, _) => {
-          if (this.state.pinned && this.latestData !== undefined) {
-            return of(this.latestData)
-          }
-          const frames = data.series;
-          // Combine all frames into one by joining on time.
-          const joined = outerJoinDataFrames({ frames });
-          if (joined === undefined) {
-            return of(data);
-          }
-          // If the detector already exists and the request ID is the same as the last one,
-          // just update the sensitivity.
-          // Otherwise, create a new detector instance, with fresh data and sensitivity.
-          // Note: this won't work unless we have a way to avoid re-requesting the data
-          // on every rerun, which needs a change to the `shouldRerun` signature.
-          // See https://github.com/grafana/scenes/pull/748 for one possible option.
-          if (this.detector !== undefined && data.request?.requestId === this.lastRequestId) {
-            this.detector.updateDetector({ sensitivity });
-          } else {
-            this.detector = createDetector(algorithm ?? 'dbscan', joined, sensitivity);
-          }
-          this.lastRequestId = data.request?.requestId;
-          const dataWithOutliers = addOutliers(this.detector, data, joined, this.state.addAnnotations ?? true, this.state.onOutlierDetected);
-          this.setLatestData(dataWithOutliers);
-          return of(dataWithOutliers);
-        },
-      }
-    ];
+    return sensitivity === undefined
+      ? []
+      : [
+          {
+            req: {
+              ...primary,
+              targets: [],
+            },
+            processor: (data, _) => {
+              if (this.state.pinned && this.latestData !== undefined) {
+                return of(this.latestData);
+              }
+              const frames = data.series;
+              // Combine all frames into one by joining on time.
+              const joined = outerJoinDataFrames({ frames });
+              if (joined === undefined) {
+                return of(data);
+              }
+              // If the detector already exists and the request ID is the same as the last one,
+              // just update the sensitivity.
+              // Otherwise, create a new detector instance, with fresh data and sensitivity.
+              // Note: this won't work unless we have a way to avoid re-requesting the data
+              // on every rerun, which needs a change to the `shouldRerun` signature.
+              // See https://github.com/grafana/scenes/pull/748 for one possible option.
+              if (this.detector !== undefined && data.request?.requestId === this.lastRequestId) {
+                this.detector.updateDetector({ sensitivity });
+              } else {
+                this.detector = createDetector(algorithm ?? 'dbscan', joined, sensitivity);
+              }
+              this.lastRequestId = data.request?.requestId;
+              const dataWithOutliers = addOutliers(
+                this.detector,
+                data,
+                joined,
+                this.state.addAnnotations ?? true,
+                this.state.onOutlierDetected
+              );
+              this.setLatestData(dataWithOutliers);
+              return of(dataWithOutliers);
+            },
+          },
+        ];
   }
 
   public shouldRerun(prev: SceneOutlierDetectorState, next: SceneOutlierDetectorState): boolean {
     if (next.pinned) {
       return false;
     }
-    return prev.sensitivity !== next.sensitivity || prev.addAnnotations !== next.addAnnotations || prev.pinned !== next.pinned || prev.algorithm !== next.algorithm;
+    return (
+      prev.sensitivity !== next.sensitivity ||
+      prev.addAnnotations !== next.addAnnotations ||
+      prev.pinned !== next.pinned ||
+      prev.algorithm !== next.algorithm
+    );
   }
 
   // Get the URL state for the component.
@@ -164,9 +194,13 @@ export class SceneOutlierDetector extends SceneObjectBase<SceneOutlierDetectorSt
   }
 }
 
-function createDetector(algorithm: OutlierDetectorAlgorithm, data: DataFrame, sensitivity: number): LoadedOutlierDetector {
+function createDetector(
+  algorithm: OutlierDetectorAlgorithm,
+  data: DataFrame,
+  sensitivity: number
+): LoadedOutlierDetector {
   // Get number fields: these are our series.
-  const serieses = data.fields.filter(f => f.type === FieldType.number);
+  const serieses = data.fields.filter((f) => f.type === FieldType.number);
   const points = serieses.map((series) => new Float64Array(series.values));
   switch (algorithm) {
     case 'dbscan':
@@ -176,9 +210,15 @@ function createDetector(algorithm: OutlierDetectorAlgorithm, data: DataFrame, se
   }
 }
 
-function addOutliers(detector: LoadedOutlierDetector, data: PanelData, joined: DataFrame, addAnnotations: boolean, onOutlierDetected?: (outlier: Outlier) => void): PanelData {
+function addOutliers(
+  detector: LoadedOutlierDetector,
+  data: PanelData,
+  joined: DataFrame,
+  addAnnotations: boolean,
+  onOutlierDetected?: (outlier: Outlier) => void
+): PanelData {
   // TODO: avoid duplicating the serieses extraction.
-  const serieses = joined.fields.filter(f => f.type === FieldType.number);
+  const serieses = joined.fields.filter((f) => f.type === FieldType.number);
   const nTimestamps = joined.fields[0].values.length;
   const outliers = detector.detect();
 
@@ -202,9 +242,15 @@ function addOutliers(detector: LoadedOutlierDetector, data: PanelData, joined: D
 
   const annotations = [];
   if (addAnnotations) {
-    const outlierStartTimes = outliers.seriesResults.flatMap((s) => s.outlierIntervals.map(interval => joined.fields[0].values[interval.start]));
-    const outlierEndTimes = outliers.seriesResults.flatMap((s) => s.outlierIntervals.map(interval => joined.fields[0].values[interval.end ?? nTimestamps - 1]));
-    const outlierAnnotationTexts = outliers.seriesResults.flatMap((s, i) => s.outlierIntervals.map(_ => `Outlier detected in series ${serieses[i].name}`));
+    const outlierStartTimes = outliers.seriesResults.flatMap((s) =>
+      s.outlierIntervals.map((interval) => joined.fields[0].values[interval.start])
+    );
+    const outlierEndTimes = outliers.seriesResults.flatMap((s) =>
+      s.outlierIntervals.map((interval) => joined.fields[0].values[interval.end ?? nTimestamps - 1])
+    );
+    const outlierAnnotationTexts = outliers.seriesResults.flatMap((s, i) =>
+      s.outlierIntervals.map((_) => `Outlier detected in series ${serieses[i].name}`)
+    );
     annotations.push({
       fields: [
         {
@@ -249,18 +295,20 @@ function addOutliers(detector: LoadedOutlierDetector, data: PanelData, joined: D
       ...f,
       config: {
         ...f.config,
-        ...(outliers.outlyingSeries.includes(i) ? {
-          color: {
-            fixedColor: '#f5b73d',
-            mode: FieldColorModeId.Fixed,
-          },
-        } : {
-          color: {
-            fixedColor: notOutlierColor,
-            mode: FieldColorModeId.Fixed,
-          }
-        }),
-      }
+        ...(outliers.outlyingSeries.includes(i)
+          ? {
+              color: {
+                fixedColor: '#f5b73d',
+                mode: FieldColorModeId.Fixed,
+              },
+            }
+          : {
+              color: {
+                fixedColor: notOutlierColor,
+                mode: FieldColorModeId.Fixed,
+              },
+            }),
+      },
     })),
   ];
   if (outliers.clusterBand) {
@@ -280,9 +328,9 @@ function addOutliers(detector: LoadedOutlierDetector, data: PanelData, joined: D
             viz: false,
             tooltip: false,
             legend: true,
-          }
+          },
         },
-      }
+      },
     });
     fields.push({
       name: 'clusterMax',
@@ -301,9 +349,9 @@ function addOutliers(detector: LoadedOutlierDetector, data: PanelData, joined: D
             viz: false,
             tooltip: false,
             legend: true,
-          }
+          },
         },
-      }
+      },
     });
   }
   return {
@@ -323,11 +371,11 @@ function SceneOutlierDetectorRenderer({ model }: SceneComponentProps<SceneOutlie
 
   const onChangeAlgorithm = (v: OutlierDetectorAlgorithm) => {
     model.onAlgorithmChanged(v);
-  }
+  };
 
   const onChangeSensitivity = (e: number | undefined) => {
     model.onSensitivityChanged(e);
-  }
+  };
 
   const sliderStyles = sensitivity === undefined || pinned ? cx(styles.slider, styles.disabled) : styles.slider;
 
@@ -349,10 +397,13 @@ function SceneOutlierDetectorRenderer({ model }: SceneComponentProps<SceneOutlie
       <Tooltip content="The model to use for outlier detection.">
         <div>
           <RadioButtonGroup
-            options={[{ label: 'DBSCAN', value: 'dbscan' }, { label: 'MAD', value: 'mad' }]}
+            options={[
+              { label: 'DBSCAN', value: 'dbscan' },
+              { label: 'MAD', value: 'mad' },
+            ]}
             disabled={sensitivity === undefined}
             value={algorithm ?? 'dbscan'}
-            onChange={v => (v === "dbscan" || v === "mad") && onChangeAlgorithm(v)}
+            onChange={(v) => (v === 'dbscan' || v === 'mad') && onChangeAlgorithm(v)}
             size="md"
           />
         </div>
@@ -424,5 +475,5 @@ function getStyles(theme: GrafanaTheme2) {
         }
       }
     `,
-  }
-};
+  };
+}

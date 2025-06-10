@@ -1,16 +1,23 @@
 import React from 'react';
-import initClustering, { DbscanClusterer } from "@bsull/augurs/clustering";
-import initDtw, { Dtw } from "@bsull/augurs/dtw";
-import { DataFrame, DataQueryRequest, FieldType, GrafanaTheme2, PanelData, outerJoinDataFrames } from "@grafana/data";
-import { FieldColorModeId } from "@grafana/schema";
-import { ButtonGroup, Checkbox, Slider, ToolbarButton, Tooltip, useStyles2 } from "@grafana/ui";
+import initClustering, { DbscanClusterer } from '@bsull/augurs/clustering';
+import initDtw, { Dtw } from '@bsull/augurs/dtw';
+import { DataFrame, DataQueryRequest, FieldType, GrafanaTheme2, PanelData, outerJoinDataFrames } from '@grafana/data';
+import { FieldColorModeId } from '@grafana/schema';
+import { ButtonGroup, Checkbox, Slider, ToolbarButton, Tooltip, useStyles2 } from '@grafana/ui';
 
-import { SceneComponentProps, SceneObjectState, SceneObjectUrlValues, SceneObjectBase, SceneObjectUrlSyncConfig, ExtraQueryProvider, ExtraQueryDescriptor } from "@grafana/scenes";
+import {
+  SceneComponentProps,
+  SceneObjectState,
+  SceneObjectUrlValues,
+  SceneObjectBase,
+  SceneObjectUrlSyncConfig,
+  ExtraQueryProvider,
+  ExtraQueryDescriptor,
+} from '@grafana/scenes';
 import { css, cx } from '@emotion/css';
 import { of } from 'rxjs';
 
-Promise.all([initClustering(), initDtw()])
-  .then(() => console.log('augurs loaded'));
+Promise.all([initClustering(), initDtw()]).then(() => console.log('augurs loaded'));
 
 interface SceneTimeSeriesClustererState extends SceneObjectState {
   epsilon?: number;
@@ -19,9 +26,10 @@ interface SceneTimeSeriesClustererState extends SceneObjectState {
 
 const DEFAULT_EPSILON = 0.8;
 
-export class SceneTimeSeriesClusterer extends SceneObjectBase<SceneTimeSeriesClustererState>
-  implements ExtraQueryProvider<SceneTimeSeriesClustererState> {
-
+export class SceneTimeSeriesClusterer
+  extends SceneObjectBase<SceneTimeSeriesClustererState>
+  implements ExtraQueryProvider<SceneTimeSeriesClustererState>
+{
   public static Component = SceneTimeSeriesClustererRenderer;
   protected _urlSync = new SceneObjectUrlSyncConfig(this, { keys: ['clusterepsilon'] });
   private latestData: PanelData | undefined;
@@ -53,29 +61,35 @@ export class SceneTimeSeriesClusterer extends SceneObjectBase<SceneTimeSeriesClu
 
   public getExtraQueries(primary: DataQueryRequest): ExtraQueryDescriptor[] {
     const { epsilon } = this.state;
-    return epsilon === undefined ? [] : [
-      {
-        req: {
-          ...primary,
-          targets: [],
-        },
-        processor: (data, _) => {
-          if (this.state.pinned && this.latestData !== undefined) {
-            return of(this.latestData)
-          }
-          const frames = data.series;
-          // Combine all frames into one by joining on time.
-          const joined = outerJoinDataFrames({ frames });
-          if (joined === undefined) {
-            return of(data);
-          }
-          const { data: dataWithClusters, clusters } = addClusters(data, joined, this.state.epsilon ?? DEFAULT_EPSILON);
-          this.setClusters(clusters);
-          this.setLatestData(dataWithClusters);
-          return of(dataWithClusters);
-        },
-      }
-    ];
+    return epsilon === undefined
+      ? []
+      : [
+          {
+            req: {
+              ...primary,
+              targets: [],
+            },
+            processor: (data, _) => {
+              if (this.state.pinned && this.latestData !== undefined) {
+                return of(this.latestData);
+              }
+              const frames = data.series;
+              // Combine all frames into one by joining on time.
+              const joined = outerJoinDataFrames({ frames });
+              if (joined === undefined) {
+                return of(data);
+              }
+              const { data: dataWithClusters, clusters } = addClusters(
+                data,
+                joined,
+                this.state.epsilon ?? DEFAULT_EPSILON
+              );
+              this.setClusters(clusters);
+              this.setLatestData(dataWithClusters);
+              return of(dataWithClusters);
+            },
+          },
+        ];
   }
 
   public shouldRerun(prev: SceneTimeSeriesClustererState, next: SceneTimeSeriesClustererState): boolean {
@@ -112,17 +126,21 @@ export class SceneTimeSeriesClusterer extends SceneObjectBase<SceneTimeSeriesClu
 }
 
 interface Cluster {
-  series: number[]
+  series: number[];
   min: number[];
   max: number[];
   mid: number[];
 }
 
-function addClusters(data: PanelData, joined: DataFrame, epsilon: number): {
-  clusters: Record<number, Cluster>,
+function addClusters(
   data: PanelData,
+  joined: DataFrame,
+  epsilon: number
+): {
+  clusters: Record<number, Cluster>;
+  data: PanelData;
 } {
-  const serieses = joined.fields.filter(f => f.type === FieldType.number);
+  const serieses = joined.fields.filter((f) => f.type === FieldType.number);
   // TODO: cache this min/max.
   let min = Number.POSITIVE_INFINITY;
   let max = Number.NEGATIVE_INFINITY;
@@ -135,8 +153,9 @@ function addClusters(data: PanelData, joined: DataFrame, epsilon: number): {
   const maxDistance = (max - min) * epsilon;
   // TODO: make this configurable.
   const minClusterSize = 3;
-  const distanceMatrix = Dtw.euclidean({ window: 10 })
-    .distanceMatrix(serieses.map(f => new Float64Array(f.values as number[])));
+  const distanceMatrix = Dtw.euclidean({ window: 10 }).distanceMatrix(
+    serieses.map((f) => new Float64Array(f.values as number[]))
+  );
   const clusterLabels = new DbscanClusterer({ epsilon: maxDistance, minClusterSize }).fit(distanceMatrix);
   const clusters: Record<number, Cluster> = {};
   for (let seriesIdx = 0; seriesIdx < clusterLabels.length; seriesIdx++) {
@@ -159,7 +178,7 @@ function addClusters(data: PanelData, joined: DataFrame, epsilon: number): {
     clusters[cluster] = clusterBand;
   }
 
-  const clusterBandFields = Object.values(clusters).flatMap((clusterBand, cluster) => ([
+  const clusterBandFields = Object.values(clusters).flatMap((clusterBand, cluster) => [
     {
       name: `clusterMin${cluster}`,
       type: FieldType.number,
@@ -176,9 +195,9 @@ function addClusters(data: PanelData, joined: DataFrame, epsilon: number): {
             viz: false,
             tooltip: false,
             legend: true,
-          }
+          },
         },
-      }
+      },
     },
     {
       name: `clusterMid${cluster}`,
@@ -192,9 +211,9 @@ function addClusters(data: PanelData, joined: DataFrame, epsilon: number): {
             viz: false,
             tooltip: false,
             legend: false,
-          }
+          },
         },
-      }
+      },
     },
     {
       name: `clusterMax${cluster}`,
@@ -213,11 +232,11 @@ function addClusters(data: PanelData, joined: DataFrame, epsilon: number): {
             viz: false,
             tooltip: false,
             legend: true,
-          }
+          },
         },
-      }
+      },
     },
-  ]));
+  ]);
 
   return {
     clusters,
@@ -247,7 +266,7 @@ function SceneTimeSeriesClustererRenderer({ model }: SceneComponentProps<SceneTi
 
   const onChangeEpsilon = (e: number | undefined) => {
     model.onEpsilonChanged(e);
-  }
+  };
 
   const sliderStyles = epsilon === undefined || pinned ? cx(styles.slider, styles.disabled) : styles.slider;
 
@@ -317,6 +336,5 @@ function getStyles(theme: GrafanaTheme2) {
         }
       }
     `,
-  }
-};
-
+  };
+}
