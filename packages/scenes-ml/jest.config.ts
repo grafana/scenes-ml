@@ -4,6 +4,10 @@ module.exports = {
   moduleNameMapper: {
     // D3 exposes ESModules. To avoid issues with Jest, we need to point them to the CJS version.
     d3: '<rootDir>/../../node_modules/d3/dist/d3.min.js',
+    '@bsull/augurs/mstl': '<rootDir>/utils/mocks/augurs/mstl.ts',
+    '@bsull/augurs/outlier': '<rootDir>/utils/mocks/augurs/outlier.ts',
+    '@bsull/augurs/prophet': '<rootDir>/utils/mocks/augurs/prophet.ts',
+    '@bsull/augurs/seasons': '<rootDir>/utils/mocks/augurs/seasons.ts',
   },
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['./utils/setupTests.ts'],
