@@ -51,8 +51,8 @@
     "react-dom": "^18.0.0"
   },
   "devDependencies": {
-    "@emotion/css": "11.13.4",
-    "@emotion/react": "11.13.3",
+    "@emotion/css": "11.13.5",
+    "@emotion/react": "11.14.0",
     "@grafana/data": "^10.4.12",
     "@grafana/eslint-config": "5.1.0",
     "@grafana/runtime": "^10.4.12",
