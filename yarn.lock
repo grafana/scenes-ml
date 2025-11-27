@@ -3554,7 +3554,7 @@ __metadata:
     rollup-plugin-fork-ts-checker: "npm:^0.0.6"
     rollup-plugin-node-externals: "npm:^5.1.3"
     rollup-plugin-svg-import: "npm:^1.6.0"
-    rxjs: "npm:7.8.1"
+    rxjs: "npm:7.8.2"
     ts-jest: "npm:29.2.5"
     ts-node: "npm:10.9.2"
     tsc-watch: "npm:^4.6.2"
@@ -24078,12 +24078,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rxjs@npm:7.8.1, rxjs@npm:^7.5.1, rxjs@npm:^7.5.4, rxjs@npm:^7.5.5":
+"rxjs@npm:7.8.1":
   version: 7.8.1
   resolution: "rxjs@npm:7.8.1"
   dependencies:
     tslib: "npm:^2.1.0"
   checksum: 10/b10cac1a5258f885e9dd1b70d23c34daeb21b61222ee735d2ec40a8685bdca40429000703a44f0e638c27a684ac139e1c37e835d2a0dc16f6fc061a138ae3abb
+  languageName: node
+  linkType: hard
+
+"rxjs@npm:7.8.2, rxjs@npm:^7.5.1, rxjs@npm:^7.5.4, rxjs@npm:^7.5.5":
+  version: 7.8.2
+  resolution: "rxjs@npm:7.8.2"
+  dependencies:
+    tslib: "npm:^2.1.0"
+  checksum: 10/03dff09191356b2b87d94fbc1e97c4e9eb3c09d4452399dddd451b09c2f1ba8d56925a40af114282d7bc0c6fe7514a2236ca09f903cf70e4bbf156650dddb49d
   languageName: node
   linkType: hard
 
@@ -24263,7 +24272,7 @@ __metadata:
     react-dom: "npm:18.2.0"
     react-router-dom: "npm:^5.2.0"
     replace-in-file-webpack-plugin: "npm:^1.0.6"
-    rxjs: "npm:7.8.1"
+    rxjs: "npm:7.8.2"
     sass: "npm:1.63.2"
     sass-loader: "npm:13.3.3"
     style-loader: "npm:3.3.4"
