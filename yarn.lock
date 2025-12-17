@@ -3473,15 +3473,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@grafana/plugin-meta-extractor@npm:^0.0.2":
-  version: 0.0.2
-  resolution: "@grafana/plugin-meta-extractor@npm:0.0.2"
+"@grafana/plugin-meta-extractor@npm:^0.11.0":
+  version: 0.11.0
+  resolution: "@grafana/plugin-meta-extractor@npm:0.11.0"
   dependencies:
     debug: "npm:^4.3.4"
     typescript: "npm:^5.4.5"
   bin:
     plugin-meta-extractor: dist/bin/run.js
-  checksum: 10/3d38342f84e67602b243020a4bacf089ee7cdfdf321589bd055ecf0be5b005cba1c0ea3f4605c91758ecca7281cfef7525587a1d5c73005e986bd707b456627b
+  checksum: 10/736aae1293967dbb071be845dca0e5bb8c3e788f379c39b298bd49e7876f04f763fb69f80480b85ef40ddae8d3028abf4acefb3614fc27eaafa53c0029065479
   languageName: node
   linkType: hard
 
@@ -24244,7 +24244,7 @@ __metadata:
     "@grafana/e2e": "npm:10.4.12"
     "@grafana/e2e-selectors": "npm:10.4.19"
     "@grafana/eslint-config": "npm:^7.0.0"
-    "@grafana/plugin-meta-extractor": "npm:^0.0.2"
+    "@grafana/plugin-meta-extractor": "npm:^0.11.0"
     "@grafana/runtime": "npm:^10.4.12"
     "@grafana/scenes": "npm:^5.24.0"
     "@grafana/scenes-ml": "workspace:*"
