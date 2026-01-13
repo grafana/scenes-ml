@@ -3532,7 +3532,7 @@ __metadata:
     "@testing-library/user-event": "npm:14.5.2"
     "@types/history": "npm:4.7.11"
     "@types/jest": "npm:29.5.14"
-    "@types/lodash": "npm:4.14.187"
+    "@types/lodash": "npm:4.17.23"
     "@types/node": "npm:20.11.30"
     "@types/react": "npm:18.2.55"
     "@types/react-dom": "npm:18.2.19"
@@ -6679,17 +6679,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/lodash@npm:4.14.187":
-  version: 4.14.187
-  resolution: "@types/lodash@npm:4.14.187"
-  checksum: 10/262cca141079e37253ecf8f53b17e4ac80fb92737a222fb6bf077d411672ab8bfd00a42bac2201b96e0234bfef3bf5991163be37220602210178cee16571465f
-  languageName: node
-  linkType: hard
-
-"@types/lodash@npm:^4.14.194":
-  version: 4.17.4
-  resolution: "@types/lodash@npm:4.17.4"
-  checksum: 10/3ec19f9fc48200006e71733e08bcb1478b0398673657fcfb21a8643d41a80bcce09a01000077c3b23a3c6d86b9b314abe0672a8fdfc0fd66b893bd41955cfab8
+"@types/lodash@npm:4.17.23, @types/lodash@npm:^4.17.4":
+  version: 4.17.23
+  resolution: "@types/lodash@npm:4.17.23"
+  checksum: 10/05935534a44aadef67c2158b2fb4a042a226970088106a40ddc67e4f063783149fe5cf02279d7dd4a1e72c98d9189b9430face659645dbf77270f8c4c3e387f5
   languageName: node
   linkType: hard
 
@@ -24257,7 +24250,7 @@ __metadata:
     "@testing-library/jest-dom": "npm:^6.4.2"
     "@testing-library/react": "npm:14.0.0"
     "@types/jest": "npm:^29.5.12"
-    "@types/lodash": "npm:^4.14.194"
+    "@types/lodash": "npm:^4.17.4"
     "@types/node": "npm:^20.11.30"
     "@types/react-router-dom": "npm:^5.3.3"
     "@types/testing-library__jest-dom": "npm:5.14.9"
