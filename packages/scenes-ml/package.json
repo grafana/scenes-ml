@@ -61,7 +61,7 @@
     "@grafana/ui": "^10.4.12",
     "@rollup/plugin-eslint": "^9.0.5",
     "@rollup/plugin-node-resolve": "15.3.1",
-    "@swc/core": "^1.2.162",
+    "@swc/core": "^1.5.7",
     "@swc/jest": "^0.2.36",
     "@testing-library/dom": "9.3.4",
     "@testing-library/jest-dom": "6.4.2",
