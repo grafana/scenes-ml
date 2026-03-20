@@ -8,7 +8,6 @@ import {
 } from '@grafana/data';
 import { RuntimeDataSource } from '@grafana/scenes';
 import { DataQuery } from '@grafana/schema';
-import { Observable } from 'rxjs';
 
 const forecastWave = [0, 0, 0.5, 1, 2, 2, 1, 1, 0.5, 0.3];
 
@@ -38,7 +37,7 @@ function targetData(target: DemoDataQuery, request: DataQueryRequest<DemoDataQue
 }
 
 export class MLDemoDS extends RuntimeDataSource {
-  public query(request: DataQueryRequest<DemoDataQuery>): Promise<DataQueryResponse> | Observable<DataQueryResponse> {
+  public query(request: DataQueryRequest<DemoDataQuery>): Promise<DataQueryResponse> {
     return Promise.resolve({
       state: LoadingState.Done,
       data: request.targets.map((target) => targetData(target, request)).filter((data) => data !== undefined),
