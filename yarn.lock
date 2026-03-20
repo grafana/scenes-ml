@@ -2070,10 +2070,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@bsull/augurs@npm:0.6.0":
-  version: 0.6.0
-  resolution: "@bsull/augurs@npm:0.6.0"
-  checksum: 10/0ba2ea0432f7d4c44ccec4d112e672f8d5d977407be42ff5995e1d6641b4b0238f97b9cdf13bc1fc066559bbd54e6fb00ad1f418014823a6c22af619e7a29c6a
+"@bsull/augurs@npm:0.10.2":
+  version: 0.10.2
+  resolution: "@bsull/augurs@npm:0.10.2"
+  checksum: 10/bb9871b5f2663e8332eb42bc1087c74fd0a1b9a6b74be72e617005bfcd0fb74918247f3bca3186e6bf45701f7aa959699d7b1667352f394a9e983c4fa10fc2f7
   languageName: node
   linkType: hard
 
@@ -3500,7 +3500,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@grafana/scenes-ml@workspace:packages/scenes-ml"
   dependencies:
-    "@bsull/augurs": "npm:0.6.0"
+    "@bsull/augurs": "npm:0.10.2"
     "@bsull/augurs-prophet-wasmstan": "npm:0.2.0"
     "@emotion/css": "npm:11.13.5"
     "@emotion/react": "npm:11.14.0"
