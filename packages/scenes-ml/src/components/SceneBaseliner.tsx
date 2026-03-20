@@ -378,10 +378,8 @@ export interface AugursPredictionTransformationOptions {
 }
 
 // Detect anomalies by comparing original data values against confidence intervals.
-// This function correctly compares original data against bounds to detect anomalies.
 export function detectAnomalies(
   originalValues: Array<number | null>,
-  modelValues: number[],
   times: number[],
   lower: number[] | undefined,
   upper: number[] | undefined,
@@ -392,7 +390,6 @@ export function detectAnomalies(
     return;
   }
 
-  // FIXED: Now correctly compares original values against bounds
   for (let idx = 0; idx < originalValues.length; idx++) {
     const value = originalValues[idx];
 
@@ -463,8 +460,17 @@ function createBaselinesForFrame(
   let totalSteps = inSampleRange / freq + 1;
   let times = createTimes(totalSteps, freq, timeField.values.at(0));
 
-  // Create aligned original values that match the model output times
+  // Create aligned original values that match the model output times.
+  // Pad or truncate to match totalSteps in case the raw data length differs
+  // from the uniform time grid (e.g. gaps or irregular timestamps).
   let alignedOriginalValues: Array<number | null> = Array.from(y);
+  if (alignedOriginalValues.length < totalSteps) {
+    alignedOriginalValues = alignedOriginalValues.concat(
+      new Array<null>(totalSteps - alignedOriginalValues.length).fill(null)
+    );
+  } else if (alignedOriginalValues.length > totalSteps) {
+    alignedOriginalValues = alignedOriginalValues.slice(0, totalSteps);
+  }
 
   // If we've been given a time range, we can filter our in-sample
   // predictions to only include data within that range. If the range
@@ -509,8 +515,7 @@ function createBaselinesForFrame(
     }
   }
 
-  // Detect anomalies using the extracted function
-  detectAnomalies(alignedOriginalValues, values, times, lower!, upper!, numField, onAnomalyDetected);
+  detectAnomalies(alignedOriginalValues, times, lower, upper, numField, onAnomalyDetected);
 
   const name = numField.config.displayNameFromDS ?? frame.name ?? numField.name;
   const fields = createFields(name, timeField, times, values, lower, upper);
