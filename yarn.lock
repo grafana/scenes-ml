@@ -3525,7 +3525,7 @@ __metadata:
     "@types/node": "npm:20.19.37"
     "@types/react": "npm:18.2.55"
     "@types/react-dom": "npm:18.2.19"
-    "@types/react-grid-layout": "npm:1.3.6"
+    "@types/react-grid-layout": "npm:2.1.0"
     "@types/react-router-dom": "npm:5.3.3"
     "@types/react-virtualized-auto-sizer": "npm:1.0.8"
     "@types/uuid": "npm:8.3.4"
@@ -6726,12 +6726,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-grid-layout@npm:1.3.6":
-  version: 1.3.6
-  resolution: "@types/react-grid-layout@npm:1.3.6"
+"@types/react-grid-layout@npm:2.1.0":
+  version: 2.1.0
+  resolution: "@types/react-grid-layout@npm:2.1.0"
   dependencies:
-    "@types/react": "npm:*"
-  checksum: 10/80b9cd6ab14f5cd32a62451544cbbeff32d6c8c3fefd6e04f974429a0b1b0d2aded1f4767ae4ce9cd4caa395e514531f5e5d6a3c3e93dba4906a907f8d77ee21
+    react-grid-layout: "npm:*"
+  checksum: 10/aee72c50b1fbcc9efd8cfd72cc1f61e461adaebca9ca48d16e94990cebc503d7b10663f33440e0fbd9b27069383f2e0b3d283ca9fc1d8e56e35c46ac423b74fe
   languageName: node
   linkType: hard
 
@@ -22723,6 +22723,23 @@ __metadata:
   peerDependencies:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0
   checksum: 10/f3954737c2677e82f72ecedcdcf5f187d2a1b86a6c5b915f7300796ac153437581ee0111c9f524e7c18124d25d0d31391d54cdee318ea390722ca57e66813ed7
+  languageName: node
+  linkType: hard
+
+"react-grid-layout@npm:*":
+  version: 2.2.2
+  resolution: "react-grid-layout@npm:2.2.2"
+  dependencies:
+    clsx: "npm:^2.1.1"
+    fast-equals: "npm:^4.0.3"
+    prop-types: "npm:^15.8.1"
+    react-draggable: "npm:^4.4.6"
+    react-resizable: "npm:^3.0.5"
+    resize-observer-polyfill: "npm:^1.5.1"
+  peerDependencies:
+    react: ">= 16.3.0"
+    react-dom: ">= 16.3.0"
+  checksum: 10/bfaa2d821b6bbe08732c1f841af23ddec982d4aafa33412fc6fd1c1eee6d60103a92a9f73bd995cc283c673650861271ee0fb36de06f3458469759395c012531
   languageName: node
   linkType: hard
 
