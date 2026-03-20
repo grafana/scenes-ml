@@ -34,7 +34,7 @@
     "@types/lodash": "^4.17.4",
     "@types/node": "^20.12.12",
     "@types/react-router-dom": "^5.3.3",
-    "@types/testing-library__jest-dom": "5.14.9",
+    "@types/testing-library__jest-dom": "6.0.0",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
     "copy-webpack-plugin": "^11.0.0",
