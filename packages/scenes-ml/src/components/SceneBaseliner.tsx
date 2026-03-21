@@ -55,7 +55,7 @@ type ModelType = 'prophet' | 'ets';
 type AnomalyDirection = 'upper' | 'lower';
 
 // An anomaly detected by the baseliner.
-interface Anomaly {
+export interface Anomaly {
   // The direction of the anomaly.
   direction: AnomalyDirection;
   // The index of the anomaly.
@@ -377,6 +377,37 @@ export interface AugursPredictionTransformationOptions {
   lookBackFactor?: number;
 }
 
+// Detect anomalies by comparing original data values against confidence intervals.
+export function detectAnomalies(
+  originalValues: Array<number | null>,
+  times: number[],
+  lower: number[] | undefined,
+  upper: number[] | undefined,
+  field: Field,
+  onAnomalyDetected?: (anomaly: Anomaly) => void
+): void {
+  if (!onAnomalyDetected || !lower || !upper || lower.length === 0 || upper.length === 0) {
+    return;
+  }
+
+  for (let idx = 0; idx < originalValues.length; idx++) {
+    const value = originalValues[idx];
+
+    // Skip null values (out-of-sample predictions where we don't have original data)
+    if (value === null || value === undefined) {
+      continue;
+    }
+
+    const lowerValue = lower[idx];
+    const upperValue = upper[idx];
+    if (value < lowerValue) {
+      onAnomalyDetected({ direction: 'lower', idx, time: times[idx], field });
+    } else if (value > upperValue) {
+      onAnomalyDetected({ direction: 'upper', idx, time: times[idx], field });
+    }
+  }
+}
+
 function createBaselinesForFrame(
   modelType: ModelType,
   frame: DataFrame,
@@ -429,6 +460,18 @@ function createBaselinesForFrame(
   let totalSteps = inSampleRange / freq + 1;
   let times = createTimes(totalSteps, freq, timeField.values.at(0));
 
+  // Create aligned original values that match the model output times.
+  // Pad or truncate to match totalSteps in case the raw data length differs
+  // from the uniform time grid (e.g. gaps or irregular timestamps).
+  let alignedOriginalValues: Array<number | null> = Array.from(y);
+  if (alignedOriginalValues.length < totalSteps) {
+    alignedOriginalValues = alignedOriginalValues.concat(
+      new Array<null>(totalSteps - alignedOriginalValues.length).fill(null)
+    );
+  } else if (alignedOriginalValues.length > totalSteps) {
+    alignedOriginalValues = alignedOriginalValues.slice(0, totalSteps);
+  }
+
   // If we've been given a time range, we can filter our in-sample
   // predictions to only include data within that range. If the range
   // extends beyond the end of the data, we can also add out-of-sample
@@ -453,6 +496,7 @@ function createBaselinesForFrame(
     values = values.slice(fromIdx, toIdx);
     lower = lower ? lower.slice(fromIdx, toIdx) : undefined;
     upper = upper ? upper.slice(fromIdx, toIdx) : undefined;
+    alignedOriginalValues = alignedOriginalValues.slice(fromIdx, toIdx);
 
     // Add out-of-sample predictions.
     if (outOfSampleSteps > 0) {
@@ -466,21 +510,12 @@ function createBaselinesForFrame(
         lower = lower.concat(Array.from(outOfSample.lower));
         upper = upper.concat(Array.from(outOfSample.upper));
       }
+      // Extend aligned original values with nulls for out-of-sample predictions
+      alignedOriginalValues = alignedOriginalValues.concat(new Array<null>(outOfSampleSteps).fill(null));
     }
   }
 
-  if (onAnomalyDetected !== undefined && lower && upper) {
-    for (let idx = 0; idx < values.length; idx++) {
-      const value = values[idx];
-      const lowerValue = lower[idx];
-      const upperValue = upper[idx];
-      if (value < lowerValue) {
-        onAnomalyDetected({ direction: 'lower', idx, time: times[idx], field: numField });
-      } else if (value > upperValue) {
-        onAnomalyDetected({ direction: 'upper', idx, time: times[idx], field: numField });
-      }
-    }
-  }
+  detectAnomalies(alignedOriginalValues, times, lower, upper, numField, onAnomalyDetected);
 
   const name = numField.config.displayNameFromDS ?? frame.name ?? numField.name;
   const fields = createFields(name, timeField, times, values, lower, upper);
