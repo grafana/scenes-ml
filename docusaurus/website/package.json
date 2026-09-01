@@ -28,8 +28,8 @@
   },
   "devDependencies": {
     "@docusaurus/module-type-aliases": "2.4.3",
-    "@tsconfig/docusaurus": "^2.0.0",
-    "typescript": "^5.6.3"
+    "@tsconfig/docusaurus": "2.0.9",
+    "typescript": "5.9.3"
   },
   "browserslist": {
     "production": [
