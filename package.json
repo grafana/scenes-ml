@@ -49,11 +49,11 @@
     "docusaurus/website"
   ],
   "devDependencies": {
-    "@auto-it/omit-commits": "^11.3.0",
-    "@auto-it/released": "^11.3.0",
-    "@testing-library/react": "^14.1.2",
-    "auto": "^11.3.0",
-    "lerna": "^6.6.2",
-    "lint-staged": "^13.3.0"
+    "@auto-it/omit-commits": "11.3.0",
+    "@auto-it/released": "11.3.0",
+    "@testing-library/react": "14.3.1",
+    "auto": "11.3.0",
+    "lerna": "6.6.2",
+    "lint-staged": "13.3.0"
   }
 }
