@@ -23,7 +23,7 @@
     "@grafana/e2e": "10.4.12",
     "@grafana/e2e-selectors": "10.4.19",
     "@grafana/eslint-config": "^7.0.0",
-    "@grafana/plugin-meta-extractor": "^0.12.0",
+    "@grafana/plugin-meta-extractor": "^0.13.0",
     "@grafana/tsconfig": "2.0.1",
     "@swc/core": "1.15.18",
     "@swc/helpers": "^0.5.11",
