@@ -49,26 +49,16 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - id: get-secrets
-        uses: grafana/shared-workflows/actions/get-vault-secrets@f1614b210386ac420af6807a997ac7f6d96e477a # get-vault-secrets/v1.3.1
+      - name: Get GitHub App Token
+        id: get-github-app-token
+        uses: grafana/shared-workflows/actions/create-github-app-token@46f48da11e78ebdba7a8747ae456b11062fac83e # create-github-app-token/v0.3.1
         with:
-          # Secrets placed in the ci/repo/grafana/scenes-ml/<path> path in Vault
-          repo_secrets: |
-            GITHUB_APP_PRIVATE_KEY=github-app:private-key
-            NPM_TOKEN=npm:token
-          export_env: false
-
-      - name: Generate a token
-        id: generate-token
-        uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1.12.0
-        with:
-          app-id: ${{ vars.APP_ID }}
-          private-key: ${{ fromJSON(steps.get-secrets.outputs.secrets).GITHUB_APP_PRIVATE_KEY }}
+          github_app: scenes-ml-repo-bot-access-token
 
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           persist-credentials: false
-          token: ${{ steps.generate-token.outputs.token }}
+          token: ${{ steps.get-github-app-token.outputs.token }}
 
       - name: Prepare repository
         run: git fetch --unshallow --tags
@@ -91,6 +81,4 @@ jobs:
       - name: Run auto shipit
         run: yarn auto shipit
         env:
-          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
-          NODE_AUTH_TOKEN: ${{ fromJSON(steps.get-secrets.outputs.secrets).NPM_TOKEN }}
-          NPM_TOKEN: ${{ fromJSON(steps.get-secrets.outputs.secrets).NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.get-github-app-token.outputs.token }}
