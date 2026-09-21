@@ -53,7 +53,7 @@ jobs:
         id: get-github-app-token
         uses: grafana/shared-workflows/actions/create-github-app-token@46f48da11e78ebdba7a8747ae456b11062fac83e # create-github-app-token/v0.3.1
         with:
-          github_app: scenes-ml-repo-bot-access-token
+          github_app: scenes-repo-bot-access-token
 
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
