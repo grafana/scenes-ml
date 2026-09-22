@@ -55,7 +55,7 @@ type ModelType = 'prophet' | 'ets';
 type AnomalyDirection = 'upper' | 'lower';
 
 // An anomaly detected by the baseliner.
-interface Anomaly {
+export interface Anomaly {
   // The direction of the anomaly.
   direction: AnomalyDirection;
   // The index of the anomaly.
@@ -377,6 +377,37 @@ export interface AugursPredictionTransformationOptions {
   lookBackFactor?: number;
 }
 
+// Detect anomalies by comparing original data values against in-sample
+// confidence bounds. The bounds arrays correspond 1:1 with the input data
+// (same indices), so no grid alignment is needed. An optional timeRange
+// filters to only report anomalies within the visible window.
+export function detectAnomalies(
+  originalValues: number[],
+  originalTimes: number[],
+  lower: number[] | undefined,
+  upper: number[] | undefined,
+  field: Field,
+  onAnomalyDetected?: (anomaly: Anomaly) => void,
+  timeRange?: { from: number; to: number }
+): void {
+  if (!onAnomalyDetected || !lower || !upper || lower.length === 0 || upper.length === 0) {
+    return;
+  }
+
+  for (let idx = 0; idx < originalValues.length; idx++) {
+    const time = originalTimes[idx];
+    if (timeRange && (time < timeRange.from || time > timeRange.to)) {
+      continue;
+    }
+    const value = originalValues[idx];
+    if (value < lower[idx]) {
+      onAnomalyDetected({ direction: 'lower', idx, time, field });
+    } else if (value > upper[idx]) {
+      onAnomalyDetected({ direction: 'upper', idx, time, field });
+    }
+  }
+}
+
 function createBaselinesForFrame(
   modelType: ModelType,
   frame: DataFrame,
@@ -420,10 +451,11 @@ function createBaselinesForFrame(
 
   // Get predictions for in-sample data (i.e. the same data we trained on).
   let { values, lower, upper } = predictInSample(model, interval);
-  // const inSample = model.predictInSample(interval);
-  // let values = Array.from(inSample.point);
-  // let lower = inSample.intervals ? Array.from(inSample.intervals.lower) : undefined;
-  // let upper = inSample.intervals ? Array.from(inSample.intervals.upper) : undefined;
+
+  // Detect anomalies before grid alignment or slicing. The in-sample bounds
+  // correspond 1:1 with the original data, so compare directly.
+  const rangeFilter = timeRange ? { from: timeRange.from.valueOf(), to: timeRange.to.valueOf() } : undefined;
+  detectAnomalies(y, timeField.values, lower, upper, numField, onAnomalyDetected, rangeFilter);
 
   // Create an output time field with the right number of entries.
   let totalSteps = inSampleRange / freq + 1;
@@ -465,19 +497,6 @@ function createBaselinesForFrame(
       if (lower && upper && outOfSample.lower && outOfSample.upper) {
         lower = lower.concat(Array.from(outOfSample.lower));
         upper = upper.concat(Array.from(outOfSample.upper));
-      }
-    }
-  }
-
-  if (onAnomalyDetected !== undefined && lower && upper) {
-    for (let idx = 0; idx < values.length; idx++) {
-      const value = values[idx];
-      const lowerValue = lower[idx];
-      const upperValue = upper[idx];
-      if (value < lowerValue) {
-        onAnomalyDetected({ direction: 'lower', idx, time: times[idx], field: numField });
-      } else if (value > upperValue) {
-        onAnomalyDetected({ direction: 'upper', idx, time: times[idx], field: numField });
       }
     }
   }
