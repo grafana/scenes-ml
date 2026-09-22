@@ -377,47 +377,33 @@ export interface AugursPredictionTransformationOptions {
   lookBackFactor?: number;
 }
 
-// Map original data values onto a uniform time grid by timestamp.
-// Each value is placed at the grid index closest to its timestamp;
-// grid positions with no corresponding data point are null.
-export function alignToGrid(
-  originalTimestamps: number[],
-  originalValues: number[],
-  gridStart: number,
-  gridStep: number,
-  gridLength: number
-): Array<number | null> {
-  const aligned: Array<number | null> = new Array(gridLength).fill(null);
-  for (let i = 0; i < originalTimestamps.length; i++) {
-    const gridIdx = Math.round((originalTimestamps[i] - gridStart) / gridStep);
-    if (gridIdx >= 0 && gridIdx < gridLength) {
-      aligned[gridIdx] = originalValues[i];
-    }
-  }
-  return aligned;
-}
-
+// Detect anomalies by comparing original data values against in-sample
+// confidence bounds. The bounds arrays correspond 1:1 with the input data
+// (same indices), so no grid alignment is needed. An optional timeRange
+// filters to only report anomalies within the visible window.
 export function detectAnomalies(
-  originalValues: Array<number | null>,
-  times: number[],
+  originalValues: number[],
+  originalTimes: number[],
   lower: number[] | undefined,
   upper: number[] | undefined,
   field: Field,
-  onAnomalyDetected?: (anomaly: Anomaly) => void
+  onAnomalyDetected?: (anomaly: Anomaly) => void,
+  timeRange?: { from: number; to: number }
 ): void {
   if (!onAnomalyDetected || !lower || !upper || lower.length === 0 || upper.length === 0) {
     return;
   }
 
   for (let idx = 0; idx < originalValues.length; idx++) {
-    const value = originalValues[idx];
-    if (value === null || value === undefined) {
+    const time = originalTimes[idx];
+    if (timeRange && (time < timeRange.from || time > timeRange.to)) {
       continue;
     }
+    const value = originalValues[idx];
     if (value < lower[idx]) {
-      onAnomalyDetected({ direction: 'lower', idx, time: times[idx], field });
+      onAnomalyDetected({ direction: 'lower', idx, time, field });
     } else if (value > upper[idx]) {
-      onAnomalyDetected({ direction: 'upper', idx, time: times[idx], field });
+      onAnomalyDetected({ direction: 'upper', idx, time, field });
     }
   }
 }
@@ -465,16 +451,15 @@ function createBaselinesForFrame(
 
   // Get predictions for in-sample data (i.e. the same data we trained on).
   let { values, lower, upper } = predictInSample(model, interval);
-  // const inSample = model.predictInSample(interval);
-  // let values = Array.from(inSample.point);
-  // let lower = inSample.intervals ? Array.from(inSample.intervals.lower) : undefined;
-  // let upper = inSample.intervals ? Array.from(inSample.intervals.upper) : undefined;
+
+  // Detect anomalies before grid alignment or slicing. The in-sample bounds
+  // correspond 1:1 with the original data, so compare directly.
+  const rangeFilter = timeRange ? { from: timeRange.from.valueOf(), to: timeRange.to.valueOf() } : undefined;
+  detectAnomalies(y, timeField.values, lower, upper, numField, onAnomalyDetected, rangeFilter);
 
   // Create an output time field with the right number of entries.
   let totalSteps = inSampleRange / freq + 1;
   let times = createTimes(totalSteps, freq, timeField.values.at(0));
-
-  let alignedOriginalValues = alignToGrid(timeField.values, y, timeField.values.at(0), freq, totalSteps);
 
   // If we've been given a time range, we can filter our in-sample
   // predictions to only include data within that range. If the range
@@ -500,7 +485,6 @@ function createBaselinesForFrame(
     values = values.slice(fromIdx, toIdx);
     lower = lower ? lower.slice(fromIdx, toIdx) : undefined;
     upper = upper ? upper.slice(fromIdx, toIdx) : undefined;
-    alignedOriginalValues = alignedOriginalValues.slice(fromIdx, toIdx);
 
     // Add out-of-sample predictions.
     if (outOfSampleSteps > 0) {
@@ -514,11 +498,8 @@ function createBaselinesForFrame(
         lower = lower.concat(Array.from(outOfSample.lower));
         upper = upper.concat(Array.from(outOfSample.upper));
       }
-      alignedOriginalValues = alignedOriginalValues.concat(new Array<null>(outOfSampleSteps).fill(null));
     }
   }
-
-  detectAnomalies(alignedOriginalValues, times, lower, upper, numField, onAnomalyDetected);
 
   const name = numField.config.displayNameFromDS ?? frame.name ?? numField.name;
   const fields = createFields(name, timeField, times, values, lower, upper);
