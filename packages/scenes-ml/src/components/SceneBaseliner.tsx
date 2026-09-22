@@ -377,6 +377,26 @@ export interface AugursPredictionTransformationOptions {
   lookBackFactor?: number;
 }
 
+// Map original data values onto a uniform time grid by timestamp.
+// Each value is placed at the grid index closest to its timestamp;
+// grid positions with no corresponding data point are null.
+export function alignToGrid(
+  originalTimestamps: number[],
+  originalValues: number[],
+  gridStart: number,
+  gridStep: number,
+  gridLength: number
+): Array<number | null> {
+  const aligned: Array<number | null> = new Array(gridLength).fill(null);
+  for (let i = 0; i < originalTimestamps.length; i++) {
+    const gridIdx = Math.round((originalTimestamps[i] - gridStart) / gridStep);
+    if (gridIdx >= 0 && gridIdx < gridLength) {
+      aligned[gridIdx] = originalValues[i];
+    }
+  }
+  return aligned;
+}
+
 export function detectAnomalies(
   originalValues: Array<number | null>,
   times: number[],
@@ -454,15 +474,7 @@ function createBaselinesForFrame(
   let totalSteps = inSampleRange / freq + 1;
   let times = createTimes(totalSteps, freq, timeField.values.at(0));
 
-  // Align original values to the model's uniform time grid for anomaly detection.
-  let alignedOriginalValues: Array<number | null> = Array.from(y);
-  if (alignedOriginalValues.length < totalSteps) {
-    alignedOriginalValues = alignedOriginalValues.concat(
-      new Array<null>(totalSteps - alignedOriginalValues.length).fill(null)
-    );
-  } else if (alignedOriginalValues.length > totalSteps) {
-    alignedOriginalValues = alignedOriginalValues.slice(0, totalSteps);
-  }
+  let alignedOriginalValues = alignToGrid(timeField.values, y, timeField.values.at(0), freq, totalSteps);
 
   // If we've been given a time range, we can filter our in-sample
   // predictions to only include data within that range. If the range

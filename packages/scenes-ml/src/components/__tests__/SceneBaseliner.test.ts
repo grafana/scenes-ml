@@ -2,9 +2,53 @@ jest.mock('@bsull/augurs', () => {});
 jest.mock('@bsull/augurs-prophet-wasmstan', () => {});
 
 import { FieldType } from '@grafana/data';
-import { detectAnomalies, Anomaly } from '../SceneBaseliner';
+import { alignToGrid, detectAnomalies, Anomaly } from '../SceneBaseliner';
 
-describe('SceneBaseliner anomaly detection', () => {
+describe('alignToGrid', () => {
+  it('maps values to correct grid positions with no gaps', () => {
+    const timestamps = [0, 1, 2, 3];
+    const values = [10, 20, 30, 40];
+    const result = alignToGrid(timestamps, values, 0, 1, 4);
+    expect(result).toEqual([10, 20, 30, 40]);
+  });
+
+  it('places values at correct grid indices when data has gaps', () => {
+    // Data at times [0, 1, 3] — gap at time 2
+    const timestamps = [0, 1, 3];
+    const values = [10, 20, 40];
+    const result = alignToGrid(timestamps, values, 0, 1, 4);
+    // Grid: [0, 1, 2, 3] → v0=10, v1=20, v2=null (gap), v3=40
+    expect(result).toEqual([10, 20, null, 40]);
+  });
+
+  it('handles multiple consecutive gaps', () => {
+    const timestamps = [0, 4];
+    const values = [10, 50];
+    const result = alignToGrid(timestamps, values, 0, 1, 5);
+    expect(result).toEqual([10, null, null, null, 50]);
+  });
+
+  it('handles millisecond timestamps with larger frequency', () => {
+    const timestamps = [1000, 2000, 4000]; // gap at 3000
+    const values = [1.5, 2.5, 4.5];
+    const result = alignToGrid(timestamps, values, 1000, 1000, 4);
+    expect(result).toEqual([1.5, 2.5, null, 4.5]);
+  });
+
+  it('returns all nulls for empty input', () => {
+    const result = alignToGrid([], [], 0, 1, 3);
+    expect(result).toEqual([null, null, null]);
+  });
+
+  it('ignores values outside the grid range', () => {
+    const timestamps = [0, 1, 2, 10];
+    const values = [10, 20, 30, 100];
+    const result = alignToGrid(timestamps, values, 0, 1, 3);
+    expect(result).toEqual([10, 20, 30]);
+  });
+});
+
+describe('detectAnomalies', () => {
   const createMockField = (name = 'Value') => ({
     name,
     type: FieldType.number,
@@ -121,6 +165,36 @@ describe('SceneBaseliner anomaly detection', () => {
       expect(() => {
         detectAnomalies([1.0, 0.1, 2.5], [1000, 2000, 3000], [0.5, 0.5, 0.5], [1.5, 1.5, 1.5], field);
       }).not.toThrow();
+    });
+  });
+
+  describe('with gaps in data (alignToGrid + detectAnomalies)', () => {
+    it('detects anomaly at correct grid position despite gap', () => {
+      const field = createMockField();
+      // Data at times [0, 1, 3] with values [1.0, 1.0, 5.0]
+      // Grid [0, 1, 2, 3], freq=1
+      // After alignment: [1.0, 1.0, null, 5.0]
+      // Bounds: lower=0, upper=2 for all 4 grid positions
+      // Anomaly should be at grid index 3 (time 3), not index 2
+      const aligned = alignToGrid([0, 1, 3], [1.0, 1.0, 5.0], 0, 1, 4);
+      const times = [0, 1, 2, 3];
+      const lower = [0, 0, 0, 0];
+      const upper = [2, 2, 2, 2];
+
+      const anomalies: Anomaly[] = [];
+      detectAnomalies(aligned, times, lower, upper, field, anomalies.push.bind(anomalies));
+
+      expect(anomalies.length).toBe(1);
+      expect(anomalies[0]).toMatchObject({ direction: 'upper', idx: 3, time: 3 });
+    });
+
+    it('does not misattribute anomaly to gap position', () => {
+      // Without proper alignment, value 5.0 (at time 3) would land at index 2 (time 2)
+      // and the real time-3 position would be null.
+      // Verify the gap position (index 2) is null/skipped.
+      const aligned = alignToGrid([0, 1, 3], [1.0, 1.0, 5.0], 0, 1, 4);
+      expect(aligned[2]).toBeNull();
+      expect(aligned[3]).toBe(5.0);
     });
   });
 
