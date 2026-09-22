@@ -70,7 +70,7 @@
     "@testing-library/user-event": "14.6.7",
     "@types/history": "5.0.0",
     "@types/jest": "29.5.14",
-    "@types/lodash": "4.17.24",
+    "@types/lodash": "4.17.25",
     "@types/node": "20.19.43",
     "@types/react": "18.2.55",
     "@types/react-dom": "18.2.19",
