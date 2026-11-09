@@ -22,7 +22,7 @@
     "@babel/core": "^8.0.0",
     "@grafana/e2e": "10.4.12",
     "@grafana/e2e-selectors": "10.4.19",
-    "@grafana/eslint-config": "^7.0.0",
+    "@grafana/eslint-config": "^10.0.0",
     "@grafana/plugin-meta-extractor": "^0.13.0",
     "@grafana/tsconfig": "2.2.0",
     "@swc/core": "1.16.2",
